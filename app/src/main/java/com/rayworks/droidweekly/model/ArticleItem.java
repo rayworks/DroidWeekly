@@ -1,17 +1,15 @@
 package com.rayworks.droidweekly.model;
 
-import com.github.florent37.retrojsoup.annotations.JsoupHref;
-import com.github.florent37.retrojsoup.annotations.JsoupText;
-
 public class ArticleItem {
-    @JsoupText(".tr(0):td(0) a")
     public String title;
 
-    @JsoupText(".tr(0):td(0) p")
     public String description;
 
-    @JsoupHref(".tr(0):td(0) a")
     public String linkage;
+
+    public String imageUrl;
+
+    public int imgFrameColor;
 
     public ArticleItem(String title, String description, String linkage) {
         this.title = title;
@@ -28,6 +26,8 @@ public class ArticleItem {
                 "title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", linkage='" + linkage + '\'' +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", imgFrameColor=" + imgFrameColor +
                 '}';
     }
 }

@@ -1,5 +1,6 @@
-package com.rayworks.droidweekly;
+package com.rayworks.droidweekly.data;
 
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -17,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -25,6 +27,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public final class ArticleManager {
+    public static final String DROID_WEEKLY = "DroidWeekly";
+    public static final int TIMEOUT_IN_SECOND = 10;
     static final String SITE_URL = "http://androidweekly.net";// /issues/issue-302
     private final OkHttpClient okHttpClient;
     private final ExecutorService executorService;
@@ -33,7 +37,13 @@ public final class ArticleManager {
     private WeakReference<ArticleDataListener> dataListener;
 
     private ArticleManager() {
-        okHttpClient = new OkHttpClient();
+        okHttpClient = new OkHttpClient.Builder()
+                .readTimeout(TIMEOUT_IN_SECOND, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .addInterceptor(new AgentInterceptor(DROID_WEEKLY))
+                .build();
+
         executorService = Executors.newSingleThreadExecutor();
 
         uiHandler = new Handler(Looper.getMainLooper());
@@ -96,24 +106,6 @@ public final class ArticleManager {
                 }
             });
         });
-
-
-        /*ArticleService service = new RetroJsoup.Builder()
-                .url(url)
-                .client(okHttpClient)
-                .build()
-                .create(ArticleService.class);
-
-        Disposable disposable = service.articles()
-                .toList()
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        articleItems -> {
-                            System.out.println(">>> " + articleItems.get(0));
-                            System.out.println(Arrays.toString(articleItems.toArray()));
-
-                        }, Throwable::printStackTrace);*/
     }
 
     private void notifyErrorMsg(String message) {
@@ -141,6 +133,29 @@ public final class ArticleManager {
             ArticleItem articleItem = new ArticleItem();
 
             Element element = tables.get(i);
+
+            Elements imageElems = element.getElementsByTag("img");
+            if (!imageElems.isEmpty()) {
+                Element imageElem = imageElems.get(0);
+
+                if (imageElem != null) {
+                    articleItem.imageUrl = imageElem.attr("src");
+
+                    String style = imageElem.attr("style");
+                    int begPos = style.indexOf("border");
+                    if (begPos >= 0) {
+                        int startPos = style.indexOf('#', begPos);
+                        int endPos = style.indexOf(";", startPos);
+
+                        if (startPos >= 0 && endPos >= 0) {
+                            articleItem.imgFrameColor = Color.parseColor(
+                                    style.substring(startPos, endPos));
+                        }
+
+                    }
+                }
+            }
+
             Elements elementsByClass = element.getElementsByClass("article-headline");
 
             if (!elementsByClass.isEmpty()) {
@@ -171,6 +186,12 @@ public final class ArticleManager {
                 String text = title.text();
                 System.out.println(">>>" + text);
                 articleItem.title = text;
+            } else { // tag Sponsored
+                title = element.selectFirst("h5");
+
+                if (title != null) {
+                    articleItem.title = title.text();
+                }
             }
 
             articleItems.add(articleItem);

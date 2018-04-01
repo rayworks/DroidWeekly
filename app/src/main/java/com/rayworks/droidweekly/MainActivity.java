@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.rayworks.droidweekly.data.ArticleManager;
 import com.rayworks.droidweekly.model.ArticleItem;
 
 import java.util.ArrayList;

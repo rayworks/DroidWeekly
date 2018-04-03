@@ -42,7 +42,8 @@ class MyViewHolder extends RecyclerView.ViewHolder {
         String imageUrl = item.imageUrl;
         if (!TextUtils.isEmpty(imageUrl)) {
             imageParent.setVisibility(View.VISIBLE);
-            ViewCompat.setBackgroundTintList(imageParent, ColorStateList.valueOf(item.imgFrameColor));
+            ViewCompat.setBackgroundTintList(
+                    imageParent, ColorStateList.valueOf(item.imgFrameColor));
 
             Glide.with(itemView).load(imageUrl).into(imageView);
         } else {

@@ -29,7 +29,7 @@ import okhttp3.Response;
 public final class ArticleManager {
     public static final String DROID_WEEKLY = "DroidWeekly";
     public static final int TIMEOUT_IN_SECOND = 10;
-    static final String SITE_URL = "http://androidweekly.net";// /issues/issue-302
+    static final String SITE_URL = "http://androidweekly.net"; // /issues/issue-302
     private final OkHttpClient okHttpClient;
     private final ExecutorService executorService;
     private final Handler uiHandler;
@@ -37,12 +37,13 @@ public final class ArticleManager {
     private WeakReference<ArticleDataListener> dataListener;
 
     private ArticleManager() {
-        okHttpClient = new OkHttpClient.Builder()
-                .readTimeout(TIMEOUT_IN_SECOND, TimeUnit.SECONDS)
-                .writeTimeout(10, TimeUnit.SECONDS)
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .addInterceptor(new AgentInterceptor(DROID_WEEKLY))
-                .build();
+        okHttpClient =
+                new OkHttpClient.Builder()
+                        .readTimeout(TIMEOUT_IN_SECOND, TimeUnit.SECONDS)
+                        .writeTimeout(10, TimeUnit.SECONDS)
+                        .connectTimeout(10, TimeUnit.SECONDS)
+                        .addInterceptor(new AgentInterceptor(DROID_WEEKLY))
+                        .build();
 
         executorService = Executors.newSingleThreadExecutor();
 
@@ -59,61 +60,68 @@ public final class ArticleManager {
     }
 
     public void loadData() {
-        executorService.submit(() -> {
-            final Request request = new Request.Builder()
-                    .url(SITE_URL)
-                    .get()
-                    .build();
+        executorService.submit(
+                () -> {
+                    final Request request = new Request.Builder().url(SITE_URL).get().build();
 
-            okHttpClient.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
-                    String message = e.getMessage();
+                    okHttpClient
+                            .newCall(request)
+                            .enqueue(
+                                    new Callback() {
+                                        @Override
+                                        public void onFailure(Call call, IOException e) {
+                                            e.printStackTrace();
+                                            String message = e.getMessage();
 
-                    notifyErrorMsg(message);
-                }
+                                            notifyErrorMsg(message);
+                                        }
 
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String data = response.body().string();
-                    Document doc = Jsoup.parse(data);
+                                        @Override
+                                        public void onResponse(Call call, Response response)
+                                                throws IOException {
+                                            String data = response.body().string();
+                                            processResponse(data);
+                                        }
+                                    });
+                });
+    }
 
-                    Elements latestIssues = doc.getElementsByClass("latest-issue");
-                    if (!latestIssues.isEmpty()) {
-                        Element issue = latestIssues.get(0);
-                        Elements sections = issue.getElementsByClass("sections");
-                        if (!sections.isEmpty()) {
-                            Elements tables = sections.get(0).getElementsByTag("table");
-                            System.out.println(">>> table size: " + tables.size());
+    private void processResponse(String data) {
+        Document doc = Jsoup.parse(data);
 
-                            final List<ArticleItem> articleItems = parseArticleItems(tables);
+        Elements latestIssues = doc.getElementsByClass("latest-issue");
+        if (!latestIssues.isEmpty()) {
+            Element issue = latestIssues.get(0);
+            Elements sections = issue.getElementsByClass("sections");
+            if (!sections.isEmpty()) {
+                Elements tables = sections.get(0).getElementsByTag("table");
+                System.out.println(">>> table size: " + tables.size());
 
-                            uiHandler.post(() -> {
-                                if (dataListener != null && dataListener.get() != null) {
-                                    dataListener.get().onComplete(articleItems);
-                                }
-                            });
+                final List<ArticleItem> articleItems = parseArticleItems(tables);
 
+                uiHandler.post(
+                        () -> {
+                            if (dataListener != null && dataListener.get() != null) {
+                                dataListener.get().onComplete(articleItems);
+                            }
+                        });
 
-                        } else {
-                            notifyErrorMsg("Parsing failure: sections not found");
-                        }
+            } else {
+                notifyErrorMsg("Parsing failure: sections not found");
+            }
 
-                    } else {
-                        notifyErrorMsg("Parsing failure: latest-issue not found");
-                    }
-                }
-            });
-        });
+        } else {
+            notifyErrorMsg("Parsing failure: latest-issue not found");
+        }
     }
 
     private void notifyErrorMsg(String message) {
-        uiHandler.post(() -> {
-            if (dataListener.get() != null) {
-                dataListener.get().onLoadError(message);
-            }
-        });
+        uiHandler.post(
+                () -> {
+                    if (dataListener.get() != null) {
+                        dataListener.get().onLoadError(message);
+                    }
+                });
     }
 
     @NonNull
@@ -148,10 +156,9 @@ public final class ArticleManager {
                         int endPos = style.indexOf(";", startPos);
 
                         if (startPos >= 0 && endPos >= 0) {
-                            articleItem.imgFrameColor = Color.parseColor(
-                                    style.substring(startPos, endPos));
+                            articleItem.imgFrameColor =
+                                    Color.parseColor(style.substring(startPos, endPos));
                         }
-
                     }
                 }
             }

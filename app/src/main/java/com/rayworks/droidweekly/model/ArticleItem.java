@@ -17,17 +17,25 @@ public class ArticleItem {
         this.linkage = linkage;
     }
 
-    public ArticleItem() {
-    }
+    public ArticleItem() {}
 
     @Override
     public String toString() {
-        return "ArticleItem{" +
-                "title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", linkage='" + linkage + '\'' +
-                ", imageUrl='" + imageUrl + '\'' +
-                ", imgFrameColor=" + imgFrameColor +
-                '}';
+        return "ArticleItem{"
+                + "title='"
+                + title
+                + '\''
+                + ", description='"
+                + description
+                + '\''
+                + ", linkage='"
+                + linkage
+                + '\''
+                + ", imageUrl='"
+                + imageUrl
+                + '\''
+                + ", imgFrameColor="
+                + imgFrameColor
+                + '}';
     }
 }

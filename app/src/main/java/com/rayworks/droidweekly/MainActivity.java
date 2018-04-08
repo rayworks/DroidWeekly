@@ -85,6 +85,10 @@ public class MainActivity extends AppCompatActivity {
                 view -> {
                     viewModel.load(true);
 
+                    // reset menu item selection
+                    setMenuItemCheckStatus(navigationView.getMenu(), false);
+                    selectedItemId = -1;
+
                     Snackbar.make(view, "Reloading now...", Snackbar.LENGTH_LONG).show();
                 });
 
@@ -165,13 +169,17 @@ public class MainActivity extends AppCompatActivity {
                         // set exclusive item check
                         menu.setGroupCheckable(0, true, true);
 
-                        if (selectedItemId > 0) {
-                            menu.getItem(selectedItemId - MENU_ID_BASE).setChecked(true);
-                        }
+                        setMenuItemCheckStatus(menu, true);
 
                         navigationView.invalidate();
                     }
                 });
+    }
+
+    private void setMenuItemCheckStatus(Menu menu, boolean checked) {
+        if (selectedItemId > 0) {
+            menu.getItem(selectedItemId - MENU_ID_BASE).setChecked(checked);
+        }
     }
 
     @Override

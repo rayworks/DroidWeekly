@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 
 import com.rayworks.droidweekly.model.ArticleItem;
+import com.rayworks.droidweekly.model.OldItemRef;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -60,9 +61,17 @@ public final class ArticleManager {
     }
 
     public void loadData() {
+        load(SITE_URL);
+    }
+
+    public void loadData(String urlSubPath) {
+        load(SITE_URL + urlSubPath);
+    }
+
+    private void load(String url) {
         executorService.submit(
                 () -> {
-                    final Request request = new Request.Builder().url(SITE_URL).get().build();
+                    final Request request = new Request.Builder().url(url).get().build();
 
                     okHttpClient
                             .newCall(request)
@@ -89,7 +98,40 @@ public final class ArticleManager {
     private void processResponse(String data) {
         Document doc = Jsoup.parse(data);
 
+        Elements pastIssues = doc.getElementsByClass("past-issues");
+        if (!pastIssues.isEmpty()) {
+            Element passIssueGrp = pastIssues.get(0);
+            Elements tags = passIssueGrp.getElementsByTag("ul");
+            Element ulTag = tags.get(0);
+            Elements liTags = ulTag.getElementsByTag("li");
+
+            final List<OldItemRef> itemRefs = new LinkedList<>();
+            int cnt = liTags.size();
+            for (int i = 0; i < cnt; i++) {
+                Element li = liTags.get(i);
+
+                Elements elements = li.getElementsByTag("a");
+                Element refItem = elements.get(0);
+
+                OldItemRef oldItemRef = new OldItemRef(refItem.text(), refItem.attr("href"));
+                System.out.println("<<< old issue: " + refItem.text());
+
+                if (oldItemRef.getRelativePath().contains("issue-")) {
+                    itemRefs.add(oldItemRef);
+                }
+            }
+
+            uiHandler.post(
+                    () -> {
+                        if (dataListener != null && dataListener.get() != null) {
+                            dataListener.get().onOldRefItemsLoaded(itemRefs);
+                        }
+                    });
+        }
+
         Elements latestIssues = doc.getElementsByClass("latest-issue");
+        Elements currentIssues = doc.getElementsByClass("issue");
+
         if (!latestIssues.isEmpty()) {
             Element issue = latestIssues.get(0);
             Elements sections = issue.getElementsByClass("sections");
@@ -98,21 +140,26 @@ public final class ArticleManager {
                 System.out.println(">>> table size: " + tables.size());
 
                 final List<ArticleItem> articleItems = parseArticleItems(tables);
-
-                uiHandler.post(
-                        () -> {
-                            if (dataListener != null && dataListener.get() != null) {
-                                dataListener.get().onComplete(articleItems);
-                            }
-                        });
+                notifyArticlesLoadedComplete(articleItems);
 
             } else {
                 notifyErrorMsg("Parsing failure: sections not found");
             }
 
+        } else if (!currentIssues.isEmpty()) {
+            notifyArticlesLoadedComplete(parseArticleItemsForIssue(doc));
         } else {
             notifyErrorMsg("Parsing failure: latest-issue not found");
         }
+    }
+
+    private void notifyArticlesLoadedComplete(List<ArticleItem> articleItems) {
+        uiHandler.post(
+                () -> {
+                    if (dataListener != null && dataListener.get() != null) {
+                        dataListener.get().onComplete(articleItems);
+                    }
+                });
     }
 
     private void notifyErrorMsg(String message) {
@@ -208,6 +255,8 @@ public final class ArticleManager {
 
     public interface ArticleDataListener {
         void onLoadError(String err);
+
+        void onOldRefItemsLoaded(List<OldItemRef> itemRefs);
 
         void onComplete(List<ArticleItem> items);
     }

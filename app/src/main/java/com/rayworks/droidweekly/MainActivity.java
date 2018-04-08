@@ -6,7 +6,11 @@ import android.databinding.Observable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,26 +24,61 @@ import android.widget.Toast;
 
 import com.rayworks.droidweekly.data.ArticleManager;
 import com.rayworks.droidweekly.databinding.LayoutNewsListBinding;
+import com.rayworks.droidweekly.model.OldItemRef;
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel;
 import com.rayworks.droidweekly.viewmodel.ViewModelFactory;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity
-        extends AppCompatActivity /*implements ArticleManager.ArticleDataListener*/ {
+public class MainActivity extends AppCompatActivity {
+    public static final String MENU_ITEM_ID = "menu_item_id";
+    private final int MENU_ID_BASE = Menu.FIRST + 0xFF;
     private RecyclerView recyclerView;
     private ArticleAdapter articleAdapter;
     private ProgressBar progressBar;
-
     private ArticleListViewModel viewModel;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+    private List<OldItemRef> oldItemRefList;
+
+    private int selectedItemId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (savedInstanceState != null) {
+            selectedItemId = savedInstanceState.getInt(MENU_ITEM_ID, -1);
+            System.out.println(">>> Item position restored : " + selectedItemId);
+        }
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_24dp);
+
+        navigationView = findViewById(R.id.nav_view);
+        drawerLayout = findViewById(R.id.drawer_layout);
+
+        navigationView.setNavigationItemSelectedListener(
+                menuItem -> {
+                    int id = menuItem.getItemId();
+                    selectedItemId = id;
+
+                    if (oldItemRefList != null) {
+                        OldItemRef itemRef = oldItemRefList.get(id - MENU_ID_BASE);
+
+                        viewModel.loadBy(itemRef.getRelativePath());
+
+                        menuItem.setChecked(true);
+                        drawerLayout.closeDrawers();
+                    }
+                    return true;
+                });
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(
@@ -66,6 +105,15 @@ public class MainActivity
                 new DividerItemDecoration(this, layoutManager.getOrientation()));
 
         setupViewModel();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (selectedItemId > 0) {
+            outState.putInt(MENU_ITEM_ID, selectedItemId);
+        }
+
+        super.onSaveInstanceState(outState);
     }
 
     private void setupViewModel() {
@@ -95,6 +143,35 @@ public class MainActivity
                         }
                     }
                 });
+
+        viewModel.itemRefs.addOnPropertyChangedCallback(
+                new Observable.OnPropertyChangedCallback() {
+                    @Override
+                    public void onPropertyChanged(Observable sender, int propertyId) {
+                        oldItemRefList = viewModel.itemRefs.get();
+                        if (oldItemRefList == null || oldItemRefList.isEmpty()) {
+                            return;
+                        }
+
+                        Menu menu = navigationView.getMenu();
+                        menu.clear();
+
+                        int base = MENU_ID_BASE;
+                        for (OldItemRef itemRef : oldItemRefList) {
+                            int pos = base++;
+                            menu.add(0, pos, pos, itemRef.getTitle());
+                        }
+
+                        // set exclusive item check
+                        menu.setGroupCheckable(0, true, true);
+
+                        if (selectedItemId > 0) {
+                            menu.getItem(selectedItemId - MENU_ID_BASE).setChecked(true);
+                        }
+
+                        navigationView.invalidate();
+                    }
+                });
     }
 
     @Override
@@ -119,8 +196,12 @@ public class MainActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                break;
+            case android.R.id.home:
+                drawerLayout.openDrawer(GravityCompat.START);
+                break;
         }
 
         return super.onOptionsItemSelected(item);

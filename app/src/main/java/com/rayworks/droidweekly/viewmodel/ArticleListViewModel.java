@@ -6,13 +6,17 @@ import android.databinding.ObservableField;
 
 import com.rayworks.droidweekly.data.ArticleManager;
 import com.rayworks.droidweekly.model.ArticleItem;
+import com.rayworks.droidweekly.model.OldItemRef;
 
+import java.util.Collections;
 import java.util.List;
 
 /** * The ViewModel for a list of articles. */
 public class ArticleListViewModel extends ViewModel implements ArticleManager.ArticleDataListener {
     public final ObservableBoolean dataLoading = new ObservableBoolean(false);
     public final ObservableField<List<ArticleItem>> articles = new ObservableField<>();
+
+    public final ObservableField<List<OldItemRef>> itemRefs = new ObservableField<>();
 
     public final ObservableBoolean articleLoaded = new ObservableBoolean(true);
 
@@ -32,6 +36,13 @@ public class ArticleListViewModel extends ViewModel implements ArticleManager.Ar
             List<ArticleItem> articleItems = articles.get();
             if (articleItems != null && articleItems.size() > 0) {
                 onComplete(articleItems);
+
+                List<OldItemRef> oldItemRefs = this.itemRefs.get();
+                if (oldItemRefs != null && oldItemRefs.size() > 0) {
+                    // mock a change
+                    this.itemRefs.set(Collections.EMPTY_LIST);
+                    onOldRefItemsLoaded(oldItemRefs);
+                }
                 return;
             }
         }
@@ -41,7 +52,8 @@ public class ArticleListViewModel extends ViewModel implements ArticleManager.Ar
     }
 
     public void loadBy(String issueId) {
-
+        dataLoading.set(true);
+        manager.setDataListener(this).loadData(issueId);
     }
 
     @Override
@@ -50,6 +62,11 @@ public class ArticleListViewModel extends ViewModel implements ArticleManager.Ar
 
         dataLoading.set(false);
         articleLoaded.set(false);
+    }
+
+    @Override
+    public void onOldRefItemsLoaded(List<OldItemRef> itemRefs) {
+        this.itemRefs.set(itemRefs);
     }
 
     @Override

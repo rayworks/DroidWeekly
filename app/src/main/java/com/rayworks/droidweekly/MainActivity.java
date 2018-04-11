@@ -22,7 +22,7 @@ import android.view.MenuItem;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.rayworks.droidweekly.data.ArticleManager;
+import com.rayworks.droidweekly.repository.ArticleManager;
 import com.rayworks.droidweekly.databinding.LayoutNewsListBinding;
 import com.rayworks.droidweekly.model.OldItemRef;
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel;

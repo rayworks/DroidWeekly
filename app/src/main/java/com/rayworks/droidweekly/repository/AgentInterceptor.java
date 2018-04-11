@@ -1,4 +1,4 @@
-package com.rayworks.droidweekly.data;
+package com.rayworks.droidweekly.repository;
 
 import java.io.IOException;
 

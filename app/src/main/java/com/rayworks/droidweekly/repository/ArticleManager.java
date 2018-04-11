@@ -1,12 +1,16 @@
-package com.rayworks.droidweekly.data;
+package com.rayworks.droidweekly.repository;
 
+import android.arch.persistence.room.Room;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
+import com.rayworks.droidweekly.App;
 import com.rayworks.droidweekly.model.ArticleItem;
 import com.rayworks.droidweekly.model.OldItemRef;
+import com.rayworks.droidweekly.repository.database.IssueDatabase;
+import com.rayworks.droidweekly.repository.database.entity.Article;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,6 +25,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -28,14 +36,19 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public final class ArticleManager {
-    public static final String DROID_WEEKLY = "DroidWeekly";
-    public static final int TIMEOUT_IN_SECOND = 10;
-    static final String SITE_URL = "http://androidweekly.net"; // /issues/issue-302
+    private static final String SITE_URL = "http://androidweekly.net"; // /issues/issue-302
+    private static final String DROID_WEEKLY = "DroidWeekly";
+    private static final int TIMEOUT_IN_SECOND = 10;
+    private static final String DATABASE_NAME = "MyDatabase";
+    private static final int ISSUE_ID_NONE = -1;
     private final OkHttpClient okHttpClient;
     private final ExecutorService executorService;
     private final Handler uiHandler;
 
     private WeakReference<ArticleDataListener> dataListener;
+
+    // To be injected
+    private IssueDatabase database;
 
     private ArticleManager() {
         okHttpClient =
@@ -49,10 +62,17 @@ public final class ArticleManager {
         executorService = Executors.newSingleThreadExecutor();
 
         uiHandler = new Handler(Looper.getMainLooper());
+
+        initStorage();
     }
 
     public static ArticleManager getInstance() {
         return ManagerHolder.articleManager;
+    }
+
+    private void initStorage() {
+        // create database
+        database = Room.databaseBuilder(App.getApp(), IssueDatabase.class, DATABASE_NAME).build();
     }
 
     public ArticleManager setDataListener(ArticleDataListener dataListener) {
@@ -61,14 +81,53 @@ public final class ArticleManager {
     }
 
     public void loadData() {
-        load(SITE_URL);
+        load(SITE_URL, ISSUE_ID_NONE);
     }
 
     public void loadData(String urlSubPath) {
-        load(SITE_URL + urlSubPath);
+        int id = ISSUE_ID_NONE;
+
+        // format like : issues/issue-302
+        String[] segments = urlSubPath.split("-");
+        if (segments.length > 0) {
+            int index = segments.length - 1;
+            id = Integer.parseInt(segments[index]);
+            System.out.println(">>> found issue id : " + id);
+        }
+
+        load(SITE_URL + urlSubPath, id);
     }
 
-    private void load(String url) {
+    private void load(final String url, final int issueId) {
+        // check the cache first
+        if (issueId > 0) {
+            Disposable disposable =
+                    Observable.just(issueId)
+                            .map(id -> database.articleDao().getArticlesByIssue(id))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    articleList -> {
+                                        if (articleList != null && articleList.size() > 0) {
+                                            System.out.println(
+                                                    ">>> cache hit for issue id : " + issueId);
+                                            notifyArticlesLoadedComplete(
+                                                    getArticleModels(articleList));
+                                        } else {
+                                            fetchFromRemote(url, issueId);
+                                        }
+                                    },
+                                    throwable -> {
+                                        throwable.printStackTrace();
+                                        fetchFromRemote(url, issueId);
+                                    },
+                                    () -> {});
+        } else {
+            fetchFromRemote(url, issueId);
+        }
+    }
+
+    private void fetchFromRemote(String url, int issueId) {
         executorService.submit(
                 () -> {
                     final Request request = new Request.Builder().url(url).get().build();
@@ -89,13 +148,13 @@ public final class ArticleManager {
                                         public void onResponse(Call call, Response response)
                                                 throws IOException {
                                             String data = response.body().string();
-                                            processResponse(data);
+                                            processResponse(data, issueId);
                                         }
                                     });
                 });
     }
 
-    private void processResponse(String data) {
+    private void processResponse(String data, int issueId) {
         Document doc = Jsoup.parse(data);
 
         Elements pastIssues = doc.getElementsByClass("past-issues");
@@ -147,10 +206,53 @@ public final class ArticleManager {
             }
 
         } else if (!currentIssues.isEmpty()) {
-            notifyArticlesLoadedComplete(parseArticleItemsForIssue(doc));
+            List<ArticleItem> items = parseArticleItemsForIssue(doc);
+            notifyArticlesLoadedComplete(items);
+
+            List<Article> entities = getArticleEntities(issueId, items);
+
+            database.articleDao().insertAll(entities);
+
         } else {
             notifyErrorMsg("Parsing failure: latest-issue not found");
         }
+    }
+
+    @NonNull
+    private List<ArticleItem> getArticleModels(List<Article> articles) {
+        List<ArticleItem> items = new LinkedList<>();
+        for (Article article : articles) {
+            ArticleItem articleItem =
+                    new ArticleItem(
+                            article.getTitle(), article.getDescription(), article.getLinkage());
+
+            articleItem.imgFrameColor = article.getImgFrameColor();
+            articleItem.imageUrl = article.getImageUrl();
+
+            items.add(articleItem);
+        }
+        return items;
+    }
+
+    @NonNull
+    private List<Article> getArticleEntities(int issueId, List<ArticleItem> items) {
+        List<Article> entities = new LinkedList<>();
+        int index = 0;
+        for (ArticleItem item : items) {
+            ++index;
+            Article article = new Article();
+
+            article.setTitle(item.title);
+            article.setDescription(item.description);
+            article.setImageUrl(item.imageUrl);
+            article.setImgFrameColor(item.imgFrameColor);
+            article.setLinkage(item.linkage);
+            article.setOrder(index);
+            article.setIssueId(issueId);
+
+            entities.add(article);
+        }
+        return entities;
     }
 
     private void notifyArticlesLoadedComplete(List<ArticleItem> articleItems) {

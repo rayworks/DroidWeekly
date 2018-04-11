@@ -5,7 +5,7 @@ import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProvider;
 import android.support.annotation.NonNull;
 
-import com.rayworks.droidweekly.data.ArticleManager;
+import com.rayworks.droidweekly.repository.ArticleManager;
 
 public class ViewModelFactory extends ViewModelProvider.AndroidViewModelFactory {
     private final ArticleManager manager;

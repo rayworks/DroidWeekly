@@ -7,4 +7,8 @@ A lightweight app for website http://androidweekly.net/
 ## TODO:
 - [x] Support viewing old issues
 - [x] Add local persistence
-- [ ] Support local search
+- [x] Support local search
+
+## Credit:
+* [Room Demo](https://github.com/gonzalonm/RoomDemo)
+* [RxJava2-Android-Samples](https://github.com/amitshekhariitbhu/RxJava2-Android-Samples)

@@ -83,13 +83,15 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(
                 view -> {
-                    viewModel.load(true);
+                    /*viewModel.load(true);
 
                     // reset menu item selection
                     setMenuItemCheckStatus(navigationView.getMenu(), false);
                     selectedItemId = -1;
 
-                    Snackbar.make(view, "Reloading now...", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(view, "Reloading now...", Snackbar.LENGTH_LONG).show();*/
+
+                    SearchActivity.launch(MainActivity.this);
                 });
 
         progressBar = findViewById(R.id.progress_bar);

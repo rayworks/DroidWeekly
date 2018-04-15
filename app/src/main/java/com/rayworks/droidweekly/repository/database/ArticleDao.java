@@ -15,6 +15,9 @@ public interface ArticleDao {
     @Query("SELECT * FROM article WHERE issue_id IS :issue ORDER BY `order`")
     List<Article> getArticlesByIssue(int issue);
 
+    @Query("SELECT * from article WHERE description LIKE :key")
+    List<Article> getArticleByKeyword(String key);
+
     @Insert
     void insertAll(List<Article> articles);
 

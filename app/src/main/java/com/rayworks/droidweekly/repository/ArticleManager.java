@@ -98,6 +98,33 @@ public final class ArticleManager {
         load(SITE_URL + urlSubPath, id);
     }
 
+    public void search(String key, WeakReference<ArticleDataListener> listener) {
+        Disposable disposable =
+                Observable.just("%" + key + "%") // for the fuzzy search
+                        .map(str -> database.articleDao().getArticleByKeyword(str))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .singleOrError()
+                        .subscribe(
+                                list -> {
+                                    System.out.println(">>><<< matched item titles : ");
+                                    for (Article article : list) {
+                                        System.out.println(">>> article : " + article.getTitle());
+                                    }
+                                    System.out.println(">>><<< matched item titles");
+
+                                    if (listener.get() != null) {
+                                        listener.get().onComplete(getArticleModels(list));
+                                    }
+                                },
+                                throwable -> {
+                                    throwable.printStackTrace();
+                                    if (listener.get() != null) {
+                                        listener.get().onLoadError(throwable.getMessage());
+                                    }
+                                });
+    }
+
     private void load(final String url, final int issueId) {
         // check the cache first
         if (issueId > 0) {

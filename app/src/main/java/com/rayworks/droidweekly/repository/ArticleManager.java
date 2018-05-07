@@ -253,8 +253,8 @@ public final class ArticleManager {
                     new ArticleItem(
                             article.getTitle(), article.getDescription(), article.getLinkage());
 
-            articleItem.imgFrameColor = article.getImgFrameColor();
-            articleItem.imageUrl = article.getImageUrl();
+            articleItem.setImgFrameColor(article.getImgFrameColor());
+            articleItem.setImageUrl(article.getImageUrl());
 
             items.add(articleItem);
         }
@@ -269,11 +269,11 @@ public final class ArticleManager {
             ++index;
             Article article = new Article();
 
-            article.setTitle(item.title);
-            article.setDescription(item.description);
-            article.setImageUrl(item.imageUrl);
-            article.setImgFrameColor(item.imgFrameColor);
-            article.setLinkage(item.linkage);
+            article.setTitle(item.getTitle());
+            article.setDescription(item.getDescription());
+            article.setImageUrl(item.getImageUrl());
+            article.setImgFrameColor(item.getImgFrameColor());
+            article.setLinkage(item.getLinkage());
             article.setOrder(index);
             article.setIssueId(issueId);
 
@@ -323,7 +323,7 @@ public final class ArticleManager {
                 Element imageElem = imageElems.get(0);
 
                 if (imageElem != null) {
-                    articleItem.imageUrl = imageElem.attr("src");
+                    articleItem.setImageUrl(imageElem.attr("src"));
 
                     String style = imageElem.attr("style");
                     int begPos = style.indexOf("border");
@@ -332,8 +332,7 @@ public final class ArticleManager {
                         int endPos = style.indexOf(";", startPos);
 
                         if (startPos >= 0 && endPos >= 0) {
-                            articleItem.imgFrameColor =
-                                    Color.parseColor(style.substring(startPos, endPos));
+                            articleItem.setImgFrameColor(Color.parseColor(style.substring(startPos, endPos)));
                         }
                     }
                 }
@@ -351,15 +350,15 @@ public final class ArticleManager {
                     String href = headline.attr("href");
                     System.out.println(">>> HEAD_URL : " + href);
 
-                    articleItem.title = text;
-                    articleItem.linkage = href;
+                    articleItem.setTitle(text);
+                    articleItem.setLinkage(href);
                 }
             }
 
             Elements paragraphs = element.getElementsByTag("p");
             if (!paragraphs.isEmpty()) {
                 String description = paragraphs.get(0).text();
-                articleItem.description = description;
+                articleItem.setDescription(description);
 
                 System.out.println(">>> HEAD_DESC: " + description);
             }
@@ -368,12 +367,12 @@ public final class ArticleManager {
             if (title != null) {
                 String text = title.text();
                 System.out.println(">>>" + text);
-                articleItem.title = text;
+                articleItem.setTitle(text);
             } else { // tag Sponsored
                 title = element.selectFirst("h5");
 
                 if (title != null) {
-                    articleItem.title = title.text();
+                    articleItem.setTitle(title.text());
                 }
             }
 

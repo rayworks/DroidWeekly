@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -22,9 +21,9 @@ import android.view.MenuItem;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.rayworks.droidweekly.model.OldItemRef;
 import com.rayworks.droidweekly.repository.ArticleManager;
 import com.rayworks.droidweekly.databinding.LayoutNewsListBinding;
-import com.rayworks.droidweekly.model.OldItemRef;
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel;
 import com.rayworks.droidweekly.viewmodel.ViewModelFactory;
 

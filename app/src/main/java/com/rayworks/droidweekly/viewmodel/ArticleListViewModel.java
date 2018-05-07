@@ -4,9 +4,9 @@ import android.arch.lifecycle.ViewModel;
 import android.databinding.ObservableBoolean;
 import android.databinding.ObservableField;
 
-import com.rayworks.droidweekly.repository.ArticleManager;
 import com.rayworks.droidweekly.model.ArticleItem;
 import com.rayworks.droidweekly.model.OldItemRef;
+import com.rayworks.droidweekly.repository.ArticleManager;
 
 import java.util.Collections;
 import java.util.List;

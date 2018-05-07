@@ -39,18 +39,18 @@ class MyViewHolder extends RecyclerView.ViewHolder {
         int unit = TypedValue.COMPLEX_UNIT_PX;
         Resources resources = context.getResources();
 
-        String imageUrl = item.imageUrl;
+        String imageUrl = item.getImageUrl();
         if (!TextUtils.isEmpty(imageUrl)) {
             imageParent.setVisibility(View.VISIBLE);
             ViewCompat.setBackgroundTintList(
-                    imageParent, ColorStateList.valueOf(item.imgFrameColor));
+                    imageParent, ColorStateList.valueOf(item.getImgFrameColor()));
 
             Glide.with(itemView).load(imageUrl).into(imageView);
         } else {
             imageParent.setVisibility(View.GONE);
         }
 
-        if (TextUtils.isEmpty(item.description)) {
+        if (TextUtils.isEmpty(item.getDescription())) {
             title.setTextColor(Color.BLACK);
             title.setTextSize(unit, resources.getDimension(R.dimen.font_size_large));
 
@@ -64,7 +64,7 @@ class MyViewHolder extends RecyclerView.ViewHolder {
 
         desc.setTextSize(unit, resources.getDimension(R.dimen.font_size_small));
 
-        title.setText(item.title);
-        desc.setText(item.description);
+        title.setText(item.getTitle());
+        desc.setText(item.getDescription());
     }
 }

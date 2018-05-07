@@ -41,7 +41,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<MyViewHolder> {
 
         Disposable disposable =
                 Observable.fromIterable(itemList)
-                        .filter(item -> !TextUtils.isEmpty(item.title))
+                        .filter(item -> !TextUtils.isEmpty(item.getTitle()))
                         .subscribe(
                                 item -> articleItems.add(item),
                                 Throwable::printStackTrace,
@@ -70,7 +70,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<MyViewHolder> {
 
         holder.itemView.setOnClickListener(
                 v -> {
-                    String linkage = item.linkage;
+                    String linkage = item.getLinkage();
 
                     if (!TextUtils.isEmpty(linkage)) {
                         if (viewArticleListener != null) {

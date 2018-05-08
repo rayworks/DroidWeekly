@@ -36,11 +36,16 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public final class ArticleManager {
+    public static final String PAST_ISSUES = "past-issues";
+    public static final String LATEST_ISSUE = "latest-issue";
+    public static final String ISSUE_HEADER = "issue-header";
     private static final String SITE_URL = "http://androidweekly.net"; // /issues/issue-302
     private static final String DROID_WEEKLY = "DroidWeekly";
     private static final int TIMEOUT_IN_SECOND = 10;
     private static final String DATABASE_NAME = "MyDatabase";
     private static final int ISSUE_ID_NONE = -1;
+    public static final String SECTIONS = "sections";
+    public static final String TABLE = "table";
     private final OkHttpClient okHttpClient;
     private final ExecutorService executorService;
     private final Handler uiHandler;
@@ -184,14 +189,15 @@ public final class ArticleManager {
     private void processResponse(String data, int issueId) {
         Document doc = Jsoup.parse(data);
 
-        Elements pastIssues = doc.getElementsByClass("past-issues");
-        if (!pastIssues.isEmpty()) {
+        List<OldItemRef> itemRefs = new LinkedList<>();
+        Elements pastIssues = doc.getElementsByClass(PAST_ISSUES);
+
+        if (!pastIssues.isEmpty()) { // contained only in the request for the latest issue
             Element passIssueGrp = pastIssues.get(0);
             Elements tags = passIssueGrp.getElementsByTag("ul");
             Element ulTag = tags.get(0);
             Elements liTags = ulTag.getElementsByTag("li");
 
-            final List<OldItemRef> itemRefs = new LinkedList<>();
             int cnt = liTags.size();
             for (int i = 0; i < cnt; i++) {
                 Element li = liTags.get(i);
@@ -206,28 +212,60 @@ public final class ArticleManager {
                     itemRefs.add(oldItemRef);
                 }
             }
-
-            uiHandler.post(
-                    () -> {
-                        if (dataListener != null && dataListener.get() != null) {
-                            dataListener.get().onOldRefItemsLoaded(itemRefs);
-                        }
-                    });
         }
 
-        Elements latestIssues = doc.getElementsByClass("latest-issue");
+        Elements latestIssues = doc.getElementsByClass(LATEST_ISSUE);
         Elements currentIssues = doc.getElementsByClass("issue");
 
         if (!latestIssues.isEmpty()) {
+            int latestId = 0;
             Element issue = latestIssues.get(0);
-            Elements sections = issue.getElementsByClass("sections");
+            Elements headers = issue.getElementsByClass(ISSUE_HEADER);
+
+            if (!headers.isEmpty()) {
+                Element header = headers.get(0);
+
+                // #308
+                String latestIssueId =
+                        header.getElementsByClass("clearfix")
+                                .get(0)
+                                .getElementsByTag("span")
+                                .text();
+
+                if (latestIssueId.startsWith("#")) {
+                    latestId = Integer.parseInt(latestIssueId.substring(1));
+                }
+
+                // build the issue menu items
+                itemRefs.add(
+                        0, new OldItemRef("Issue " + latestIssueId, "issues/issue-" + latestId));
+
+                uiHandler.post(
+                        () -> {
+                            if (dataListener != null && dataListener.get() != null) {
+                                dataListener.get().onOldRefItemsLoaded(itemRefs);
+                            }
+                        });
+
+                List<Article> articles = database.articleDao().getArticlesByIssue(latestId);
+                if (articles.size() > 0) {
+                    // the latest issue content cache hits.
+                    System.out.println(">>> cache hit for issue id : " + latestId);
+                    notifyArticlesLoadedComplete(getArticleModels(articles));
+                    return;
+                }
+            }
+
+            Elements sections = issue.getElementsByClass(SECTIONS);
             if (!sections.isEmpty()) {
-                Elements tables = sections.get(0).getElementsByTag("table");
+                Elements tables = sections.get(0).getElementsByTag(TABLE);
                 System.out.println(">>> table size: " + tables.size());
 
                 final List<ArticleItem> articleItems = parseArticleItems(tables);
                 notifyArticlesLoadedComplete(articleItems);
 
+                List<Article> entities = getArticleEntities(latestId, articleItems);
+                database.articleDao().insertAll(entities);
             } else {
                 notifyErrorMsg("Parsing failure: sections not found");
             }
@@ -332,7 +370,8 @@ public final class ArticleManager {
                         int endPos = style.indexOf(";", startPos);
 
                         if (startPos >= 0 && endPos >= 0) {
-                            articleItem.setImgFrameColor(Color.parseColor(style.substring(startPos, endPos)));
+                            articleItem.setImgFrameColor(
+                                    Color.parseColor(style.substring(startPos, endPos)));
                         }
                     }
                 }

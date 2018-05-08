@@ -21,9 +21,9 @@ import android.view.MenuItem;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.rayworks.droidweekly.databinding.LayoutNewsListBinding;
 import com.rayworks.droidweekly.model.OldItemRef;
 import com.rayworks.droidweekly.repository.ArticleManager;
-import com.rayworks.droidweekly.databinding.LayoutNewsListBinding;
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel;
 import com.rayworks.droidweekly.viewmodel.ViewModelFactory;
 
@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private List<OldItemRef> oldItemRefList;
 
-    private int selectedItemId = -1;
+    private int selectedItemId = MENU_ID_BASE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
                         // set exclusive item check
                         menu.setGroupCheckable(0, true, true);
 
+                        // default selection
                         setMenuItemCheckStatus(menu, true);
 
                         navigationView.invalidate();

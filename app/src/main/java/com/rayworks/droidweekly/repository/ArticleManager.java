@@ -1,6 +1,8 @@
 package com.rayworks.droidweekly.repository;
 
 import android.arch.persistence.room.Room;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,16 +23,13 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -39,19 +38,20 @@ public final class ArticleManager {
     public static final String PAST_ISSUES = "past-issues";
     public static final String LATEST_ISSUE = "latest-issue";
     public static final String ISSUE_HEADER = "issue-header";
+    public static final String SECTIONS = "sections";
+    public static final String TABLE = "table";
+    public static final String ISSUE_INFO = "issue_info";
+    public static final String LATEST_ISSUE_ID = "latest_issue_id";
     private static final String SITE_URL = "http://androidweekly.net"; // /issues/issue-302
     private static final String DROID_WEEKLY = "DroidWeekly";
     private static final int TIMEOUT_IN_SECOND = 10;
     private static final String DATABASE_NAME = "MyDatabase";
     private static final int ISSUE_ID_NONE = -1;
-    public static final String SECTIONS = "sections";
-    public static final String TABLE = "table";
+
     private final OkHttpClient okHttpClient;
-    private final ExecutorService executorService;
     private final Handler uiHandler;
-
+    private final SharedPreferences preferences;
     private WeakReference<ArticleDataListener> dataListener;
-
     // To be injected
     private IssueDatabase database;
 
@@ -64,20 +64,20 @@ public final class ArticleManager {
                         .addInterceptor(new AgentInterceptor(DROID_WEEKLY))
                         .build();
 
-        executorService = Executors.newSingleThreadExecutor();
-
         uiHandler = new Handler(Looper.getMainLooper());
 
-        initStorage();
+        Context context = App.getApp().getApplicationContext();
+        preferences = context.getSharedPreferences(ISSUE_INFO, Context.MODE_PRIVATE);
+        initStorage(context);
     }
 
     public static ArticleManager getInstance() {
         return ManagerHolder.articleManager;
     }
 
-    private void initStorage() {
+    private void initStorage(Context context) {
         // create database
-        database = Room.databaseBuilder(App.getApp(), IssueDatabase.class, DATABASE_NAME).build();
+        database = Room.databaseBuilder(context, IssueDatabase.class, DATABASE_NAME).build();
     }
 
     public ArticleManager setDataListener(ArticleDataListener dataListener) {
@@ -146,44 +146,62 @@ public final class ArticleManager {
                                             notifyArticlesLoadedComplete(
                                                     getArticleModels(articleList));
                                         } else {
-                                            fetchFromRemote(url, issueId);
+                                            rxFetchRemote(url, issueId);
                                         }
                                     },
                                     throwable -> {
                                         throwable.printStackTrace();
-                                        fetchFromRemote(url, issueId);
+                                        rxFetchRemote(url, issueId);
                                     },
                                     () -> {});
         } else {
-            fetchFromRemote(url, issueId);
+            rxFetchRemote(url, issueId);
         }
     }
 
-    private void fetchFromRemote(String url, int issueId) {
-        executorService.submit(
-                () -> {
-                    final Request request = new Request.Builder().url(url).get().build();
+    private void rxFetchRemote(String url, int issueId) {
+        Single<Response> observable =
+                Single.create(
+                        subscriber -> {
+                            try {
+                                Request request = new Request.Builder().url(url).get().build();
+                                Response response = okHttpClient.newCall(request).execute();
 
-                    okHttpClient
-                            .newCall(request)
-                            .enqueue(
-                                    new Callback() {
-                                        @Override
-                                        public void onFailure(Call call, IOException e) {
-                                            e.printStackTrace();
-                                            String message = e.getMessage();
+                                subscriber.onSuccess(response);
+                            } catch (IOException e) {
+                                subscriber.onError(e);
+                            }
+                        });
 
-                                            notifyErrorMsg(message);
+        Disposable disposable =
+                observable
+                        .doOnError(
+                                throwable -> {
+                                    int lastId = preferences.getInt(LATEST_ISSUE_ID, 0);
+                                    if (lastId > 0 && issueId == ISSUE_ID_NONE) {
+                                        List<Article> articleList =
+                                                database.articleDao().getArticlesByIssue(lastId);
+
+                                        if (articleList != null && articleList.size() > 0) {
+                                            System.err.println(
+                                                    ">>> cache hit for last issue id : " + lastId);
+                                            notifyArticlesLoadedComplete(
+                                                    getArticleModels(articleList));
                                         }
+                                    }
+                                })
+                        .subscribeOn(Schedulers.io())
+                        .subscribe(
+                                response -> {
+                                    String data = response.body().string();
+                                    processResponse(data, issueId);
+                                },
+                                throwable -> {
+                                    throwable.printStackTrace();
 
-                                        @Override
-                                        public void onResponse(Call call, Response response)
-                                                throws IOException {
-                                            String data = response.body().string();
-                                            processResponse(data, issueId);
-                                        }
-                                    });
-                });
+                                    String message = throwable.getMessage();
+                                    notifyErrorMsg(message);
+                                });
     }
 
     private void processResponse(String data, int issueId) {
@@ -239,6 +257,8 @@ public final class ArticleManager {
                 // build the issue menu items
                 itemRefs.add(
                         0, new OldItemRef("Issue " + latestIssueId, "issues/issue-" + latestId));
+
+                preferences.edit().putInt(LATEST_ISSUE_ID, latestId).apply();
 
                 uiHandler.post(
                         () -> {

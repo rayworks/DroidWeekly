@@ -14,16 +14,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 
 public class ArticleAdapter extends RecyclerView.Adapter<MyViewHolder> {
-    List<ArticleItem> articleItems = new ArrayList<>();
+    private List<ArticleItem> articleItems = new ArrayList<>();
     private Context context;
     private OnViewArticleListener viewArticleListener;
+
+    private final CompositeDisposable compositeDisposable;
 
     public ArticleAdapter(Context context, List<ArticleItem> items) {
         this.context = context;
         this.articleItems.addAll(items);
+
+        compositeDisposable = new CompositeDisposable();
     }
 
     public ArticleAdapter setViewArticleListener(OnViewArticleListener viewArticleListener) {
@@ -53,6 +58,8 @@ public class ArticleAdapter extends RecyclerView.Adapter<MyViewHolder> {
                                         notifyDataSetChanged();
                                     }
                                 });
+
+        compositeDisposable.add(disposable);
     }
 
     @NonNull
@@ -83,5 +90,14 @@ public class ArticleAdapter extends RecyclerView.Adapter<MyViewHolder> {
     @Override
     public int getItemCount() {
         return articleItems.size();
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
+
+        if(!compositeDisposable.isDisposed()){
+            compositeDisposable.dispose();
+        }
     }
 }

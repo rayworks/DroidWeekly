@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
     private final int MENU_ID_BASE = Menu.FIRST + 0xFF;
     private RecyclerView recyclerView;
     private ArticleAdapter articleAdapter;
-    private ProgressBar progressBar;
     private ArticleListViewModel viewModel;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -93,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
                     SearchActivity.launch(MainActivity.this);
                 });
 
-        progressBar = findViewById(R.id.progress_bar);
+        ProgressBar progressBar = findViewById(R.id.progress_bar);
         recyclerView = findViewById(R.id.recycler_list);
         articleAdapter = new ArticleAdapter(this, new ArrayList<>());
         articleAdapter.setViewArticleListener(
@@ -211,6 +210,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
+                break;
+            default:
                 break;
         }
 

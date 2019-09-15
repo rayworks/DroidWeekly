@@ -24,7 +24,6 @@ class MyViewHolder extends RecyclerView.ViewHolder {
     private final TextView desc;
     private final ImageView imageView;
     private final ViewGroup imageParent;
-    private View.OnClickListener clickListener;
 
     public MyViewHolder(View itemView) {
         super(itemView);

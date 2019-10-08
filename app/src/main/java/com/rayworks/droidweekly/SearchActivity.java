@@ -129,6 +129,10 @@ public class SearchActivity extends AppCompatActivity
 
         searchView = (SearchView) item.getActionView();
         setupSearchAction();
+
+        // expands the SearchView automatically
+        searchView.setIconified(false);
+
         return true;
     }
 

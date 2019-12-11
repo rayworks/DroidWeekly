@@ -1,12 +1,12 @@
 package com.rayworks.droidweekly.repository;
 
-import android.arch.persistence.room.Room;
+import androidx.room.Room;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.rayworks.droidweekly.App;
 import com.rayworks.droidweekly.model.ArticleItem;
@@ -325,15 +325,18 @@ public final class ArticleManager {
         int index = 0;
         for (ArticleItem item : items) {
             ++index;
-            Article article = new Article();
+            Article article = new Article(item.hashCode(),
+                    item.getTitle(),item.getDescription(),
+                    item.getLinkage(),  item.getImageUrl() == null ? "" : item.getImageUrl(),
+                    item.getImgFrameColor(), issueId, index);
 
-            article.setTitle(item.getTitle());
+           /* article.setTitle(item.getTitle());
             article.setDescription(item.getDescription());
             article.setImageUrl(item.getImageUrl());
             article.setImgFrameColor(item.getImgFrameColor());
             article.setLinkage(item.getLinkage());
             article.setOrder(index);
-            article.setIssueId(issueId);
+            article.setIssueId(issueId);*/
 
             entities.add(article);
         }

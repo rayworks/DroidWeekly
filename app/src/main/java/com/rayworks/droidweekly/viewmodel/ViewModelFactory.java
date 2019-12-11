@@ -1,25 +1,26 @@
 package com.rayworks.droidweekly.viewmodel;
 
 import android.app.Application;
-import android.arch.lifecycle.ViewModel;
-import android.arch.lifecycle.ViewModelProvider;
-import android.support.annotation.NonNull;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.annotation.NonNull;
 
 import com.rayworks.droidweekly.repository.ArticleManager;
+import com.rayworks.droidweekly.repository.ArticleRepository;
 
 public class ViewModelFactory extends ViewModelProvider.AndroidViewModelFactory {
-    private final ArticleManager manager;
+    private final ArticleRepository repository;
 
-    public ViewModelFactory(@NonNull Application application, ArticleManager articleManager) {
+    public ViewModelFactory(@NonNull Application application, ArticleRepository repository) {
         super(application);
-        this.manager = articleManager;
+        this.repository = repository;
     }
 
     @NonNull
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(ArticleListViewModel.class)) {
-            return (T) new ArticleListViewModel(manager);
+            return (T) new ArticleListViewModel(repository);
         }
 
         throw new UnsupportedOperationException(

@@ -12,7 +12,7 @@
 
     </data>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -20,11 +20,11 @@
         tools:context=".MainActivity"
         tools:showIn="@layout/activity_main">
 
-        <android.support.v7.widget.RecyclerView
+        <!--app:items="@{viewmodel.articles}"-->
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:items="@{viewmodel.articles}" />
+            android:layout_height="match_parent" />
 
         <ProgressBar
             android:id="@+id/progress_bar"
@@ -36,6 +36,6 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

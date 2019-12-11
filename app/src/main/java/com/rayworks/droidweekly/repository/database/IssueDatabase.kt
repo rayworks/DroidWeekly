@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.rayworks.droidweekly.repository.ArticleRepository
 import com.rayworks.droidweekly.repository.database.entity.Article
 
 @Database(entities = [Article::class], version = 1, exportSchema = false)
@@ -23,7 +24,7 @@ fun getDatabase(context: Context): IssueDatabase {
                 .databaseBuilder(
                     context.applicationContext,
                     IssueDatabase::class.java,
-                    "my_db"
+                    ArticleRepository.DATABASE_NAME
                 )
                 .fallbackToDestructiveMigration()
                 .build()

@@ -39,11 +39,11 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
 
         private val DROID_WEEKLY = "DroidWeekly"
         private val TIMEOUT_IN_SECOND = 10
-        val DATABASE_NAME = "MyDatabase"
+        val DATABASE_NAME = "my_db"
         private val ISSUE_ID_NONE = -1
     }
 
-    private lateinit var okHttpClient: OkHttpClient
+    private var okHttpClient: OkHttpClient
 
     init {
 
@@ -136,7 +136,7 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
         val itemRefs: MutableList<OldItemRef> =
             LinkedList()
         val pastIssues =
-            doc.getElementsByClass(ArticleManager.PAST_ISSUES)
+            doc.getElementsByClass(PAST_ISSUES)
         if (!pastIssues.isEmpty()) { // contained only in the request for the latest issue
             val passIssueGrp = pastIssues[0]
             val tags = passIssueGrp.getElementsByTag("ul")
@@ -155,13 +155,13 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
             }
         }
         val latestIssues =
-            doc.getElementsByClass(ArticleManager.LATEST_ISSUE)
+            doc.getElementsByClass(LATEST_ISSUE)
         val currentIssues = doc.getElementsByClass("issue")
         if (!latestIssues.isEmpty()) {
             var latestId = 0
             val issue = latestIssues[0]
             val headers =
-                issue.getElementsByClass(ArticleManager.ISSUE_HEADER)
+                issue.getElementsByClass(ISSUE_HEADER)
             if (!headers.isEmpty()) {
                 val header = headers[0]
                 // #308

@@ -4,16 +4,15 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
-import android.os.Build;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.rayworks.droidweekly.model.ArticleItem;
@@ -47,13 +46,14 @@ class MyViewHolder extends RecyclerView.ViewHolder {
             int frameColor = item.getImgFrameColor();
 
             View targetView = imageParent;
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            /*if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                 // apply a different layout
                 // ref: https://stackoverflow.com/questions/4772537/i-need-to-change-the-stroke-color-to-a-user-defined-color-nothing-to-do-with-th
                 targetView = itemView.findViewById(R.id.frame_view);
                 GradientDrawable drawable = (GradientDrawable) targetView.getBackground();
                 drawable.setStroke(1, frameColor);
-            } else {
+            } else*/
+                {
                 ViewCompat.setBackgroundTintList(targetView, ColorStateList.valueOf(frameColor));
             }
 

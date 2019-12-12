@@ -1,29 +1,36 @@
 package com.rayworks.droidweekly;
 
-import android.arch.lifecycle.ViewModelProviders;
+import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
-import android.databinding.Observable;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.rayworks.droidweekly.databinding.LayoutNewsListBinding;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.databinding.Observable;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.rayworks.droidweekly.databinding.ActivityMainBinding;
 import com.rayworks.droidweekly.model.OldItemRef;
-import com.rayworks.droidweekly.repository.ArticleManager;
+import com.rayworks.droidweekly.repository.ArticleRepository;
+import com.rayworks.droidweekly.repository.database.ArticleDao;
+import com.rayworks.droidweekly.repository.database.IssueDatabase;
+import com.rayworks.droidweekly.repository.database.IssueDatabaseKt;
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel;
 import com.rayworks.droidweekly.viewmodel.ViewModelFactory;
 
@@ -121,12 +128,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupViewModel() {
+        IssueDatabase database = IssueDatabaseKt.getDatabase(this);
+        ArticleDao articleDao = database.articleDao();
+
+        Application context = getApplication();
+        SharedPreferences preferences =
+                context.getSharedPreferences(
+                        ArticleRepository.Companion.getISSUE_INFO(), Context.MODE_PRIVATE);
+
         ViewModelFactory factory =
-                new ViewModelFactory(getApplication(), ArticleManager.getInstance());
+                new ViewModelFactory(context, new ArticleRepository(articleDao, preferences));
         viewModel = ViewModelProviders.of(this, factory).get(ArticleListViewModel.class);
 
-        LayoutNewsListBinding listBinding = LayoutNewsListBinding.bind(findViewById(R.id.content));
-        listBinding.setViewmodel(viewModel);
+        ActivityMainBinding dataBinding = ActivityMainBinding.bind(findViewById(R.id.drawer_layout));
+        dataBinding.setViewmodel(viewModel);
+
+        // enables MutableLiveData to be update on your UI
+        dataBinding.setLifecycleOwner(this);
 
         viewModel.articleLoaded.addOnPropertyChangedCallback(
                 new Observable.OnPropertyChangedCallback() {
@@ -148,33 +166,33 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-        viewModel.itemRefs.addOnPropertyChangedCallback(
-                new Observable.OnPropertyChangedCallback() {
-                    @Override
-                    public void onPropertyChanged(Observable sender, int propertyId) {
-                        oldItemRefList = viewModel.itemRefs.get();
-                        if (oldItemRefList == null || oldItemRefList.isEmpty()) {
-                            return;
-                        }
+        viewModel
+                .getItemRefs()
+                .observe(
+                        this,
+                        oldItemRefs -> {
+                            oldItemRefList = oldItemRefs;
+                            if (oldItemRefList == null || oldItemRefList.isEmpty()) {
+                                return;
+                            }
 
-                        Menu menu = navigationView.getMenu();
-                        menu.clear();
+                            Menu menu = navigationView.getMenu();
+                            menu.clear();
 
-                        int base = MENU_ID_BASE;
-                        for (OldItemRef itemRef : oldItemRefList) {
-                            int pos = base++;
-                            menu.add(0, pos, pos, itemRef.getTitle());
-                        }
+                            int base = MENU_ID_BASE;
+                            for (OldItemRef itemRef : oldItemRefList) {
+                                int pos = base++;
+                                menu.add(0, pos, pos, itemRef.getTitle());
+                            }
 
-                        // set exclusive item check
-                        menu.setGroupCheckable(0, true, true);
+                            // set exclusive item check
+                            menu.setGroupCheckable(0, true, true);
 
-                        // default selection
-                        setMenuItemCheckStatus(menu, true);
+                            // default selection
+                            setMenuItemCheckStatus(menu, true);
 
-                        navigationView.invalidate();
-                    }
-                });
+                            navigationView.invalidate();
+                        });
     }
 
     private void setMenuItemCheckStatus(Menu menu, boolean checked) {

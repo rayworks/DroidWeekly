@@ -7,12 +7,12 @@ import com.rayworks.droidweekly.model.ArticleItem
 
 object ArticleListBindings {
     @JvmStatic
-    @BindingAdapter("items")
+    @BindingAdapter("app:items")
     fun setItems(
-        view: RecyclerView,
+        listView: RecyclerView,
         items: List<ArticleItem>?
     ) {
-        val adapter = view.adapter as ArticleAdapter
-        items?.let { adapter.update(it) }
+        val adapter = listView.adapter as ArticleAdapter?
+        adapter?.update(items)
     }
 }

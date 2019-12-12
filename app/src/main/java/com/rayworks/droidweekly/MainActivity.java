@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-import com.rayworks.droidweekly.databinding.LayoutNewsListBinding;
+import com.rayworks.droidweekly.databinding.ActivityMainBinding;
 import com.rayworks.droidweekly.model.OldItemRef;
 import com.rayworks.droidweekly.repository.ArticleRepository;
 import com.rayworks.droidweekly.repository.database.ArticleDao;
@@ -140,8 +140,11 @@ public class MainActivity extends AppCompatActivity {
                 new ViewModelFactory(context, new ArticleRepository(articleDao, preferences));
         viewModel = ViewModelProviders.of(this, factory).get(ArticleListViewModel.class);
 
-        LayoutNewsListBinding listBinding = LayoutNewsListBinding.bind(findViewById(R.id.content));
-        listBinding.setViewmodel(viewModel);
+        ActivityMainBinding dataBinding = ActivityMainBinding.bind(findViewById(R.id.drawer_layout));
+        dataBinding.setViewmodel(viewModel);
+
+        // enables MutableLiveData to be update on your UI
+        dataBinding.setLifecycleOwner(this);
 
         viewModel.articleLoaded.addOnPropertyChangedCallback(
                 new Observable.OnPropertyChangedCallback() {
@@ -162,8 +165,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
-
-        viewModel.getArticleItems().observe(this, items -> articleAdapter.update(items));
 
         viewModel
                 .getItemRefs()

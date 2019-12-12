@@ -74,11 +74,17 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
         load(SITE_URL + urlSubPath, id)
     }
 
-    fun updateList(list: List<ArticleItem>) {
-        GlobalScope.launch {
-            withContext(Dispatchers.Main) {
-                articleList.value = list
-            }
+    private suspend fun updateList(list: List<ArticleItem>) {
+        withContext(Dispatchers.Main) {
+            articleList.value = list
+
+            println(">>> data : ${list.size} items loaded")
+        }
+    }
+
+    private suspend fun setDataLoaded(loaded: Boolean) {
+        withContext(Dispatchers.Main) {
+            articleLoaded.value = loaded
         }
     }
 
@@ -96,24 +102,23 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
                     fetchRemote(url, issueId)
                 }
 
-                GlobalScope.launch {
-                    withContext(Dispatchers.Main) { articleLoaded.value = true }
-                }
+                setDataLoaded(true)
             } catch (exp: Exception) {
-                GlobalScope.launch {
-                    withContext(Dispatchers.Main) { articleLoaded.value = false }
-                }
+                exp.printStackTrace()
+
+                setDataLoaded(false)
             }
 
         }
     }
 
-    private fun fetchRemote(url: String, issueId: Int) {
+    private suspend fun fetchRemote(url: String, issueId: Int) {
         try {
             val request = Request.Builder().url(url).get().build()
             val response = okHttpClient.newCall(request).execute()
 
             processResponse(response.body()!!.string(), issueId)
+
         } catch (exception: IOException) {
             exception.printStackTrace()
 
@@ -131,7 +136,7 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
         }
     }
 
-    private fun processResponse(data: String, issueId: Int) {
+    private suspend fun processResponse(data: String, issueId: Int) {
         val doc = Jsoup.parse(data)
         val itemRefs: MutableList<OldItemRef> =
             LinkedList()

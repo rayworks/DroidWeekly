@@ -39,8 +39,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     public static final String MENU_ITEM_ID = "menu_item_id";
     private final int MENU_ID_BASE = Menu.FIRST + 0xFF;
-    private RecyclerView recyclerView;
-    private ArticleAdapter articleAdapter;
     private ArticleListViewModel viewModel;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -98,8 +96,8 @@ public class MainActivity extends AppCompatActivity {
                     SearchActivity.launch(MainActivity.this);
                 });
 
-        recyclerView = findViewById(R.id.recycler_list);
-        articleAdapter = new ArticleAdapter(this, new ArrayList<>());
+        RecyclerView recyclerView = findViewById(R.id.recycler_list);
+        ArticleAdapter articleAdapter = new ArticleAdapter(this, new ArrayList<>());
         articleAdapter.setViewArticleListener(
                 url -> {
                     Intent intent = new Intent(Intent.ACTION_VIEW);

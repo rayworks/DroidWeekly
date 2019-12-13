@@ -15,6 +15,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import java.io.IOException
 import java.util.LinkedList
@@ -61,10 +62,16 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
                 .build()
     }
 
+    /***
+     * Loads the latest issue.
+     */
     suspend fun loadData() {
         load(SITE_URL, ISSUE_ID_NONE)
     }
 
+    /***
+     * Loads the historical issue.
+     */
     suspend fun loadData(urlSubPath: String) {
         var id = ISSUE_ID_NONE
         // format like : issues/issue-302
@@ -91,6 +98,9 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
         }
     }
 
+    /***
+     * Loads the issue content.
+     */
     suspend fun load(url: String, issueId: Int) {
         withContext(Dispatchers.IO) {
             try {
@@ -106,7 +116,7 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
                 }
 
                 setDataLoaded(true)
-            } catch (exp: Exception) {
+            } catch (exp: IOException) {
 
                 setDataLoaded(false)
                 throw exp
@@ -164,8 +174,8 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
                 doc.getElementsByClass(LATEST_ISSUE)
         val currentIssues = doc.getElementsByClass("issue")
         if (!latestIssues.isEmpty()) {
-            var latestId = 0
             val issue = latestIssues[0]
+            var latestId = 0
             val headers =
                     issue.getElementsByClass(ISSUE_HEADER)
             if (!headers.isEmpty()) {
@@ -195,20 +205,9 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
                     return
                 }
             }
-            val sections = issue.getElementsByClass(SECTIONS)
-            if (!sections.isEmpty()) {
-                val tables =
-                        sections[0].getElementsByTag(TABLE)
-                println(">>> table size: " + tables.size)
-                val articleItems = parseArticleItems(tables)
-                //articleList.value = articleItems
-                updateList(articleItems)
 
-                val entities = getArticleEntities(latestId, articleItems)
-                articleDao.insertAll(entities)
-            } else {
-                throw IOException("Parsing failure: sections not found")
-            }
+            parseSections(issue, latestId)
+
         } else if (!currentIssues.isEmpty()) {
             val items = parseArticleItemsForIssue(doc)
             //articleList.value = items
@@ -218,6 +217,23 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
             articleDao.insertAll(entities)
         } else {
             throw IOException("Parsing failure: latest-issue not found")
+        }
+    }
+
+    private suspend fun parseSections(issue: Element, latestId: Int) {
+        val sections = issue.getElementsByClass(SECTIONS)
+        if (!sections.isEmpty()) {
+            val tables =
+                    sections[0].getElementsByTag(TABLE)
+            println(">>> table size: " + tables.size)
+            val articleItems = parseArticleItems(tables)
+            //articleList.value = articleItems
+            updateList(articleItems)
+
+            val entities = getArticleEntities(latestId, articleItems)
+            articleDao.insertAll(entities)
+        } else {
+            throw IOException("Parsing failure: sections not found")
         }
     }
 

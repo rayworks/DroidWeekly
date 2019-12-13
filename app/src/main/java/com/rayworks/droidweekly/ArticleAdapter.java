@@ -1,8 +1,10 @@
 package com.rayworks.droidweekly;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -79,10 +81,8 @@ public class ArticleAdapter extends RecyclerView.Adapter<MyViewHolder> {
                 v -> {
                     String linkage = item.getLinkage();
 
-                    if (!TextUtils.isEmpty(linkage)) {
-                        if (viewArticleListener != null) {
-                            viewArticleListener.onView(linkage);
-                        }
+                    if (!TextUtils.isEmpty(linkage) && viewArticleListener != null) {
+                        viewArticleListener.onView(linkage);
                     }
                 });
     }
@@ -96,7 +96,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<MyViewHolder> {
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onDetachedFromRecyclerView(recyclerView);
 
-        if(!compositeDisposable.isDisposed()){
+        if (!compositeDisposable.isDisposed()) {
             compositeDisposable.dispose();
         }
     }

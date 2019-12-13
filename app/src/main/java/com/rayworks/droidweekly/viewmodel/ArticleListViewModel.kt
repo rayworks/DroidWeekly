@@ -9,6 +9,7 @@ import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.ArticleManager.ArticleDataListener
 import com.rayworks.droidweekly.repository.ArticleRepository
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 /** * The ViewModel for a list of articles.  */
 class ArticleListViewModel(private val manager: ArticleRepository) : ViewModel(),
@@ -44,7 +45,7 @@ class ArticleListViewModel(private val manager: ArticleRepository) : ViewModel()
             try {
                 manager.loadData()
                 dataLoading.set(false)
-            } catch (ex: Exception) {
+            } catch (ex: IOException) {
                 onLoadError(ex.message!!)
             }
         }
@@ -61,7 +62,7 @@ class ArticleListViewModel(private val manager: ArticleRepository) : ViewModel()
                 manager.loadData(issueId)
 
                 dataLoading.set(false)
-            } catch (ex: Exception) {
+            } catch (ex: IOException) {
                 onLoadError(ex.message!!)
             }
         }

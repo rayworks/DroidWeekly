@@ -7,27 +7,33 @@ import androidx.room.RoomDatabase
 import com.rayworks.droidweekly.repository.ArticleRepository
 import com.rayworks.droidweekly.repository.database.entity.Article
 
+/***
+ * The [Article] DB
+ */
 @Database(entities = [Article::class], version = 1, exportSchema = false)
 abstract class IssueDatabase : RoomDatabase() {
+    /***
+     * The abstract interface to access the article data
+     */
     abstract fun articleDao(): ArticleDao?
 }
 
 private lateinit var INSTANCE: IssueDatabase
 
 /**
- * Instantiate a database from a context.
+ * Instantiates a database from a context.
  */
 fun getDatabase(context: Context): IssueDatabase {
     synchronized(IssueDatabase::class) {
         if (!::INSTANCE.isInitialized) {
             INSTANCE = Room
-                .databaseBuilder(
-                    context.applicationContext,
-                    IssueDatabase::class.java,
-                    ArticleRepository.DATABASE_NAME
-                )
-                .fallbackToDestructiveMigration()
-                .build()
+                    .databaseBuilder(
+                            context.applicationContext,
+                            IssueDatabase::class.java,
+                            ArticleRepository.DATABASE_NAME
+                    )
+                    .fallbackToDestructiveMigration()
+                    .build()
         }
     }
     return INSTANCE

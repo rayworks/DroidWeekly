@@ -104,9 +104,9 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
 
                 setDataLoaded(true)
             } catch (exp: Exception) {
-                exp.printStackTrace()
 
                 setDataLoaded(false)
+                throw exp
             }
 
         }

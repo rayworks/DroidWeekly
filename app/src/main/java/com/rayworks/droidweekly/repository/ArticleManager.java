@@ -17,12 +17,15 @@ import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public final class ArticleManager {
     // To be injected
     private IssueDatabase database;
+
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private ArticleManager() {
         Context context = App.getApp().getApplicationContext();
@@ -63,6 +66,12 @@ public final class ArticleManager {
                                         listener.get().onLoadError(throwable.getMessage());
                                     }
                                 });
+
+        compositeDisposable.add(disposable);
+    }
+
+    public void dispose() {
+        compositeDisposable.dispose();
     }
 
     @NonNull

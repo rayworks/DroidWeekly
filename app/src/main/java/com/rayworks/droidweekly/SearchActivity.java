@@ -164,6 +164,7 @@ public class SearchActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         if (disposable != null) {
+            ArticleManager.getInstance().dispose();
             disposable.dispose();
         }
 

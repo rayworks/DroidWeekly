@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
@@ -99,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
                     SearchActivity.launch(MainActivity.this);
                 });
 
-        ProgressBar progressBar = findViewById(R.id.progress_bar);
         recyclerView = findViewById(R.id.recycler_list);
         articleAdapter = new ArticleAdapter(this, new ArrayList<>());
         articleAdapter.setViewArticleListener(

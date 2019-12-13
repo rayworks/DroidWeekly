@@ -1,11 +1,11 @@
 package com.rayworks.droidweekly.viewmodel;
 
 import android.app.Application;
+
+import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.annotation.NonNull;
 
-import com.rayworks.droidweekly.repository.ArticleManager;
 import com.rayworks.droidweekly.repository.ArticleRepository;
 
 public class ViewModelFactory extends ViewModelProvider.AndroidViewModelFactory {

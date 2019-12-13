@@ -20,6 +20,9 @@ import java.io.IOException
 import java.util.LinkedList
 import java.util.concurrent.TimeUnit
 
+/***
+ * A repository as the data entry to load the article items.
+ */
 class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPreferences) {
     var refList: MutableLiveData<List<OldItemRef>> = MutableLiveData()
 
@@ -48,14 +51,14 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
     init {
 
         okHttpClient = OkHttpClient.Builder()
-            .readTimeout(
-                TIMEOUT_IN_SECOND.toLong(),
-                TimeUnit.SECONDS
-            )
-            .writeTimeout(10, TimeUnit.SECONDS)
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .addInterceptor(AgentInterceptor(DROID_WEEKLY))
-            .build()
+                .readTimeout(
+                        TIMEOUT_IN_SECOND.toLong(),
+                        TimeUnit.SECONDS
+                )
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .addInterceptor(AgentInterceptor(DROID_WEEKLY))
+                .build()
     }
 
     suspend fun loadData() {
@@ -125,7 +128,7 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
             val lastId = preferences.getInt(LATEST_ISSUE_ID, 0)
             if (lastId > 0 && issueId == ISSUE_ID_NONE) {
                 val articleList: List<Article> =
-                    articleDao.getArticlesByIssue(lastId)
+                        articleDao.getArticlesByIssue(lastId)
 
                 updateList(getArticleModels(articleList))
 
@@ -138,10 +141,8 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
 
     private suspend fun processResponse(data: String, issueId: Int) {
         val doc = Jsoup.parse(data)
-        val itemRefs: MutableList<OldItemRef> =
-            LinkedList()
-        val pastIssues =
-            doc.getElementsByClass(PAST_ISSUES)
+        val itemRefs: MutableList<OldItemRef> = LinkedList()
+        val pastIssues = doc.getElementsByClass(PAST_ISSUES)
         if (!pastIssues.isEmpty()) { // contained only in the request for the latest issue
             val passIssueGrp = pastIssues[0]
             val tags = passIssueGrp.getElementsByTag("ul")
@@ -160,25 +161,25 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
             }
         }
         val latestIssues =
-            doc.getElementsByClass(LATEST_ISSUE)
+                doc.getElementsByClass(LATEST_ISSUE)
         val currentIssues = doc.getElementsByClass("issue")
         if (!latestIssues.isEmpty()) {
             var latestId = 0
             val issue = latestIssues[0]
             val headers =
-                issue.getElementsByClass(ISSUE_HEADER)
+                    issue.getElementsByClass(ISSUE_HEADER)
             if (!headers.isEmpty()) {
                 val header = headers[0]
                 // #308
                 val latestIssueId = header.getElementsByClass("clearfix")[0]
-                    .getElementsByTag("span")
-                    .text()
+                        .getElementsByTag("span")
+                        .text()
                 if (latestIssueId.startsWith("#")) {
                     latestId = latestIssueId.substring(1).toInt()
                 }
                 // build the issue menu items
                 itemRefs.add(
-                    0, OldItemRef("Issue $latestIssueId", "issues/issue-$latestId")
+                        0, OldItemRef("Issue $latestIssueId", "issues/issue-$latestId")
                 )
                 preferences.edit().putInt(LATEST_ISSUE_ID, latestId).apply()
 
@@ -197,7 +198,7 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
             val sections = issue.getElementsByClass(SECTIONS)
             if (!sections.isEmpty()) {
                 val tables =
-                    sections[0].getElementsByTag(TABLE)
+                        sections[0].getElementsByTag(TABLE)
                 println(">>> table size: " + tables.size)
                 val articleItems = parseArticleItems(tables)
                 //articleList.value = articleItems
@@ -224,7 +225,7 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
         val items: MutableList<ArticleItem> = LinkedList()
         for (article in articles) {
             val articleItem = ArticleItem(
-                article.title, article.description, article.linkage
+                    article.title, article.description, article.linkage
             )
             articleItem.imgFrameColor = article.imgFrameColor
             articleItem.imageUrl = article.imageUrl
@@ -234,21 +235,21 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
     }
 
     private fun getArticleEntities(
-        issueId: Int,
-        items: List<ArticleItem>
+            issueId: Int,
+            items: List<ArticleItem>
     ): List<Article> {
         val entities: MutableList<Article> = LinkedList()
         var index = 0
         for (item in items) {
             ++index
             val article = Article(
-                title = item.title,
-                description = item.description,
-                imageUrl = item.imageUrl ?: "",
-                imgFrameColor = item.imgFrameColor,
-                linkage = item.linkage,
-                order = index,
-                issueId = issueId
+                    title = item.title,
+                    description = item.description,
+                    imageUrl = item.imageUrl ?: "",
+                    imgFrameColor = item.imgFrameColor,
+                    linkage = item.linkage,
+                    order = index,
+                    issueId = issueId
             )
             entities.add(article)
         }
@@ -263,7 +264,7 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
 
     private fun parseArticleItems(tables: Elements): List<ArticleItem> {
         val articleItems: MutableList<ArticleItem> =
-            LinkedList()
+                LinkedList()
         for (i in tables.indices) {
             val articleItem = ArticleItem()
             val element = tables[i]
@@ -279,13 +280,13 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
                         val endPos = style.indexOf(";", startPos)
                         if (startPos >= 0 && endPos >= 0) {
                             articleItem.imgFrameColor =
-                                Color.parseColor(style.substring(startPos, endPos))
+                                    Color.parseColor(style.substring(startPos, endPos))
                         }
                     }
                 }
             }
             val elementsByClass =
-                element.getElementsByClass("article-headline")
+                    element.getElementsByClass("article-headline")
             if (!elementsByClass.isEmpty()) {
                 val headline = elementsByClass[0]
                 if (headline != null) {

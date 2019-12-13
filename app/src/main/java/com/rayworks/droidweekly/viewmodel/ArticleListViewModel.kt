@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 /** * The ViewModel for a list of articles.  */
 class ArticleListViewModel(private val manager: ArticleRepository) : ViewModel(),
-    ArticleDataListener {
+        ArticleDataListener {
 
     @JvmField
     val dataLoading = ObservableBoolean(false)
@@ -27,6 +27,9 @@ class ArticleListViewModel(private val manager: ArticleRepository) : ViewModel()
     @JvmField
     val articleLoaded = ObservableBoolean(true)
 
+    /***
+     * Loads the [articleItems] for latest issue.
+     */
     fun load(forced: Boolean) {
         if (!forced) { // check the cache first
             if (!articleItems.value.isNullOrEmpty()) {
@@ -47,6 +50,9 @@ class ArticleListViewModel(private val manager: ArticleRepository) : ViewModel()
         }
     }
 
+    /***
+     * Loads the [articleItems] by related issue id.
+     */
     fun loadBy(issueId: String) {
         dataLoading.set(true)
 

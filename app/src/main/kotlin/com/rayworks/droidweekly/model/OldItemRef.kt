@@ -1,3 +1,6 @@
 package com.rayworks.droidweekly.model
 
-data class OldItemRef(val title: String, val relativePath: String) {}
+/***
+ * The view data for [Article] reference.
+ */
+data class OldItemRef(val title: String, val relativePath: String)

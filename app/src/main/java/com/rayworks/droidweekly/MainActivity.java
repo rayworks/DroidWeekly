@@ -37,6 +37,8 @@ import com.rayworks.droidweekly.viewmodel.ViewModelFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.rayworks.droidweekly.repository.Constants.PREF_ISSUE_INFO;
+
 public class MainActivity extends AppCompatActivity {
     public static final String MENU_ITEM_ID = "menu_item_id";
     private final int MENU_ID_BASE = Menu.FIRST + 0xFF;
@@ -130,8 +132,7 @@ public class MainActivity extends AppCompatActivity {
 
         Application context = getApplication();
         SharedPreferences preferences =
-                context.getSharedPreferences(
-                        ArticleRepository.Companion.getISSUE_INFO(), Context.MODE_PRIVATE);
+                context.getSharedPreferences(PREF_ISSUE_INFO, Context.MODE_PRIVATE);
 
         ViewModelFactory factory =
                 new ViewModelFactory(context, new ArticleRepository(articleDao, preferences, new WebContentParser()));

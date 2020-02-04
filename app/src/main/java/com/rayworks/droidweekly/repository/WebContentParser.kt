@@ -22,7 +22,6 @@ class WebContentParser {
 
             return colorString.toInt()
         }
-
     }
 
     fun parse(data: String): Pair<List<ArticleItem>, List<OldItemRef>> {
@@ -30,7 +29,7 @@ class WebContentParser {
         val itemRefs: MutableList<OldItemRef> = LinkedList()
         val items: List<ArticleItem>
 
-        val pastIssues = doc.getElementsByClass(ArticleRepository.PAST_ISSUES)
+        val pastIssues = doc.getElementsByClass(PAST_ISSUES)
         if (!pastIssues.isEmpty()) { // contained only in the request for the latest issue
             val passIssueGrp = pastIssues[0]
             val tags = passIssueGrp.getElementsByTag("ul")
@@ -49,13 +48,13 @@ class WebContentParser {
             }
         }
         val latestIssues =
-                doc.getElementsByClass(ArticleRepository.LATEST_ISSUE)
+                doc.getElementsByClass(LATEST_ISSUE)
         val currentIssues = doc.getElementsByClass("issue")
         if (!latestIssues.isEmpty()) { // the latest issue content
             val issue = latestIssues[0]
             var latestId = 0
             val headers =
-                    issue.getElementsByClass(ArticleRepository.ISSUE_HEADER)
+                    issue.getElementsByClass(ISSUE_HEADER)
             if (!headers.isEmpty()) {
                 val header = headers[0]
                 // #308
@@ -83,10 +82,10 @@ class WebContentParser {
     }
 
     private fun parseSections(issue: Element): List<ArticleItem> {
-        val sections = issue.getElementsByClass(ArticleRepository.SECTIONS)
+        val sections = issue.getElementsByClass(SECTIONS)
         if (sections != null && !sections.isEmpty()) {
             val tables =
-                    sections[0].getElementsByTag(ArticleRepository.TABLE)
+                    sections[0].getElementsByTag(TABLE)
             println(">>> table size: " + tables.size)
             return parseArticleItems(tables)
         } else {

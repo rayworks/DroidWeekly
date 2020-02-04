@@ -20,6 +20,8 @@ abstract class IssueDatabase : RoomDatabase() {
 
 private lateinit var INSTANCE: IssueDatabase
 
+const val DATABASE_NAME = "my_db"
+
 /**
  * Instantiates a database from a context.
  */
@@ -30,7 +32,7 @@ fun getDatabase(context: Context): IssueDatabase {
                     .databaseBuilder(
                             context.applicationContext,
                             IssueDatabase::class.java,
-                            ArticleRepository.DATABASE_NAME
+                            DATABASE_NAME
                     )
                     .fallbackToDestructiveMigration()
                     .build()

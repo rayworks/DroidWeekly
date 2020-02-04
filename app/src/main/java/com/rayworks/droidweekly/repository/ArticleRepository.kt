@@ -1,7 +1,6 @@
 package com.rayworks.droidweekly.repository
 
 import android.content.SharedPreferences
-import android.graphics.Color
 import androidx.lifecycle.MutableLiveData
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.model.OldItemRef
@@ -13,12 +12,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
-import org.jsoup.select.Elements
 import java.io.IOException
-import java.util.LinkedList
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 /***
@@ -30,22 +25,6 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
     var articleList: MutableLiveData<List<ArticleItem>> = MutableLiveData()
 
     var articleLoaded = MutableLiveData<Boolean>()
-
-    companion object {
-        val PAST_ISSUES = "past-issues"
-        val LATEST_ISSUE = "latest-issue"
-        val ISSUE_HEADER = "issue-header"
-        val SECTIONS = "sections"
-        val TABLE = "table"
-        val ISSUE_INFO = "issue_info"
-        val LATEST_ISSUE_ID = "latest_issue_id"
-        private val SITE_URL = "http://androidweekly.net" // /issues/issue-302
-
-        private val DROID_WEEKLY = "DroidWeekly"
-        private val TIMEOUT_IN_SECOND = 10
-        val DATABASE_NAME = "my_db"
-        private val ISSUE_ID_NONE = -1
-    }
 
     private var okHttpClient: OkHttpClient
 

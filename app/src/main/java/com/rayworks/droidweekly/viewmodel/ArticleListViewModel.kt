@@ -1,7 +1,6 @@
 package com.rayworks.droidweekly.viewmodel
 
 import androidx.databinding.ObservableBoolean
-import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rayworks.droidweekly.model.ArticleItem

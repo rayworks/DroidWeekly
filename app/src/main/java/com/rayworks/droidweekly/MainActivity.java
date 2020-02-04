@@ -17,7 +17,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.databinding.Observable;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
         ViewModelFactory factory =
                 new ViewModelFactory(context, new ArticleRepository(articleDao, preferences));
-        viewModel = ViewModelProviders.of(this, factory).get(ArticleListViewModel.class);
+        viewModel = new ViewModelProvider(this, factory).get(ArticleListViewModel.class) ;
 
         ActivityMainBinding dataBinding = ActivityMainBinding.bind(findViewById(R.id.drawer_layout));
         dataBinding.setViewmodel(viewModel);

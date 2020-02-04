@@ -2,6 +2,8 @@ package com.rayworks.droidweekly;
 
 import android.app.Application;
 
+import timber.log.Timber;
+
 public class App extends Application {
 
     private static App app;
@@ -15,5 +17,9 @@ public class App extends Application {
         super.onCreate();
 
         app = this;
+
+        if(BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        }
     }
 }

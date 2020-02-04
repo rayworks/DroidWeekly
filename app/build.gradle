@@ -4,12 +4,37 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
+// Required as JUnit 5 doesn't support android modules out of the box.
+apply plugin: "de.mannodermaus.android-junit5"
+
 android {
     compileSdkVersion 28
 
-    sourceSets {
-        main {
-            java.srcDirs += 'src/main/kotlin'
+    // Add Kotlin source directory to all source sets
+    sourceSets.each {
+        it.java.srcDirs += "src/$it.name/kotlin"
+    }
+
+    testOptions {
+        junitPlatform {
+            filters {
+                engines {
+                    include 'spek2'
+                }
+            }
+            jacocoOptions {
+                // here goes all jacoco config, for example
+                html.enabled = true
+                xml.enabled = false
+                csv.enabled = false
+
+                unitTests.all {
+                    testLogging.events = ["passed", "skipped", "failed"]
+                }
+            }
+        }
+        unitTests.all {
+            testLogging.events = ["passed", "skipped", "failed"]
         }
     }
 
@@ -20,6 +45,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunnerArgument "runnerBuilder", "de.mannodermaus.junit5.AndroidJUnit5Builder"
     }
     buildTypes {
         release {
@@ -56,7 +82,22 @@ dependencies {
 
     kapt "com.android.databinding:compiler:$android_gradle_version"
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$rootProject.kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    androidTestImplementation "de.mannodermaus.junit5:android-test-core:1.0.0"
+    androidTestRuntimeOnly "de.mannodermaus.junit5:android-test-runner:1.0.0"
+
+    // spek
+    testImplementation "org.spekframework.spek2:spek-dsl-jvm:$spek_version"
+    testImplementation "org.spekframework.spek2:spek-runner-junit5:$spek_version"
+
+    // spek requires kotlin-reflect, omit when already in classpath
+    testImplementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+
+    // assertion
+    testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+
+    implementation 'com.jakewharton.timber:timber:4.7.1'
 
     implementation "org.jsoup:jsoup:$jsoup_version"
 

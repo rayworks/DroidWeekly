@@ -27,6 +27,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.rayworks.droidweekly.databinding.ActivityMainBinding;
 import com.rayworks.droidweekly.model.OldItemRef;
 import com.rayworks.droidweekly.repository.ArticleRepository;
+import com.rayworks.droidweekly.repository.WebContentParser;
 import com.rayworks.droidweekly.repository.database.ArticleDao;
 import com.rayworks.droidweekly.repository.database.IssueDatabase;
 import com.rayworks.droidweekly.repository.database.IssueDatabaseKt;
@@ -133,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
                         ArticleRepository.Companion.getISSUE_INFO(), Context.MODE_PRIVATE);
 
         ViewModelFactory factory =
-                new ViewModelFactory(context, new ArticleRepository(articleDao, preferences));
+                new ViewModelFactory(context, new ArticleRepository(articleDao, preferences, new WebContentParser()));
         viewModel = new ViewModelProvider(this, factory).get(ArticleListViewModel.class) ;
 
         ActivityMainBinding dataBinding = ActivityMainBinding.bind(findViewById(R.id.drawer_layout));

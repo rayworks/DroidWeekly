@@ -1,6 +1,7 @@
 package com.rayworks.droidweekly.viewmodel
 
 import androidx.databinding.ObservableBoolean
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rayworks.droidweekly.model.ArticleItem
@@ -8,11 +9,15 @@ import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.ArticleManager.ArticleDataListener
 import com.rayworks.droidweekly.repository.ArticleRepository
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.io.IOException
 
 /** * The ViewModel for a list of articles.  */
-class ArticleListViewModel(private val manager: ArticleRepository) : ViewModel(),
+class ArticleListViewModel(private val savedStateHandle: SavedStateHandle,
+                           private val manager: ArticleRepository) : ViewModel(),
         ArticleDataListener {
+
+    val keyMenuId = "menu_item_id"
 
     @JvmField
     val dataLoading = ObservableBoolean(false)
@@ -26,6 +31,23 @@ class ArticleListViewModel(private val manager: ArticleRepository) : ViewModel()
 
     @JvmField
     val articleLoaded = ObservableBoolean(true)
+
+    var selectedItemId: Int = 0
+        set(value) {
+            field = value
+
+            savedStateHandle.set(keyMenuId, selectedItemId)
+            Timber.i(">>> Item position saved : $value")
+        }
+        get() {
+            if (field == 0) {
+                if (savedStateHandle.contains(keyMenuId)) {
+                    field = savedStateHandle.get(keyMenuId) ?: 0
+                    Timber.i(">>> Item position restored : $field")
+                }
+            }
+            return field
+        }
 
     /***
      * Loads the [articleItems] for latest issue.

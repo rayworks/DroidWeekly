@@ -37,10 +37,10 @@ import com.rayworks.droidweekly.viewmodel.ViewModelFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.rayworks.droidweekly.repository.Constants.LATEST_ISSUE_ID;
 import static com.rayworks.droidweekly.repository.Constants.PREF_ISSUE_INFO;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String MENU_ITEM_ID = "menu_item_id";
     private final int MENU_ID_BASE = Menu.FIRST + 0xFF;
     private ArticleListViewModel viewModel;
     private DrawerLayout drawerLayout;
@@ -48,16 +48,12 @@ public class MainActivity extends AppCompatActivity {
     private List<OldItemRef> oldItemRefList;
 
     private int selectedItemId = MENU_ID_BASE;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        if (savedInstanceState != null) {
-            selectedItemId = savedInstanceState.getInt(MENU_ITEM_ID, -1);
-            System.out.println(">>> Item position restored : " + selectedItemId);
-        }
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -72,7 +68,8 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(
                 menuItem -> {
                     int id = menuItem.getItemId();
-                    selectedItemId = id;
+
+                    viewModel.setSelectedItemId(id);
 
                     if (oldItemRefList != null) {
                         OldItemRef itemRef = oldItemRefList.get(id - MENU_ID_BASE);
@@ -115,15 +112,11 @@ public class MainActivity extends AppCompatActivity {
                 new DividerItemDecoration(this, layoutManager.getOrientation()));
 
         setupViewModel();
-    }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        if (selectedItemId > 0) {
-            outState.putInt(MENU_ITEM_ID, selectedItemId);
+        int lastSelected = viewModel.getSelectedItemId();
+        if (lastSelected > 0) {
+            selectedItemId = lastSelected;
         }
-
-        super.onSaveInstanceState(outState);
     }
 
     private void setupViewModel() {
@@ -131,12 +124,11 @@ public class MainActivity extends AppCompatActivity {
         ArticleDao articleDao = database.articleDao();
 
         Application context = getApplication();
-        SharedPreferences preferences =
-                context.getSharedPreferences(PREF_ISSUE_INFO, Context.MODE_PRIVATE);
+        preferences = context.getSharedPreferences(PREF_ISSUE_INFO, Context.MODE_PRIVATE);
 
         ViewModelFactory factory =
-                new ViewModelFactory(context, new ArticleRepository(articleDao, preferences, new WebContentParser()));
-        viewModel = new ViewModelProvider(this, factory).get(ArticleListViewModel.class) ;
+                new ViewModelFactory(this, null, new ArticleRepository(articleDao, preferences, new WebContentParser()));
+        viewModel = new ViewModelProvider(this, factory).get(ArticleListViewModel.class);
 
         ActivityMainBinding dataBinding = ActivityMainBinding.bind(findViewById(R.id.drawer_layout));
         dataBinding.setViewmodel(viewModel);
@@ -203,7 +195,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        viewModel.load(false);
+        if (selectedItemId == MENU_ID_BASE) {
+            viewModel.load(false);
+        } else {
+            // FIXME: the detailed path should be hidden
+            int id = preferences.getInt(LATEST_ISSUE_ID, 0);
+            int selected = id - (selectedItemId - MENU_ID_BASE);
+
+            viewModel.loadBy("/issues/issue-" + selected);
+        }
     }
 
     @Override

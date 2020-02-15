@@ -2,6 +2,8 @@ package com.rayworks.droidweekly.repository
 
 import android.content.SharedPreferences
 import androidx.lifecycle.MutableLiveData
+import com.google.gson.Gson
+import com.rayworks.droidweekly.extension.jsonToObject
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.database.ArticleDao
@@ -12,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import timber.log.Timber
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -27,6 +30,8 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
     var articleLoaded = MutableLiveData<Boolean>()
 
     private var okHttpClient: OkHttpClient
+
+    private val gson = Gson()
 
     init {
 
@@ -83,6 +88,18 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
     suspend fun load(url: String, issueId: Int) {
         withContext(Dispatchers.IO) {
             try {
+                // notify the cached historical ref data first if found any
+                val refItemStr = preferences.getString(REFERENCE_ISSUES_ID, "")
+                if (!refItemStr.isNullOrEmpty()) {
+                    val list = gson.jsonToObject<List<OldItemRef>>(refItemStr)
+                    if (!list.isNullOrEmpty()) {
+                        Timber.i(">>> cached ref items found with size : %d", list.size)
+                        GlobalScope.launch {
+                            withContext(Dispatchers.Main) { refList.value = list }
+                        }
+                    }
+                }
+
                 if (issueId > 0) {
                     val articlesByIssue = articleDao.getArticlesByIssue(issueId)
                     if (articlesByIssue.isNullOrEmpty()) {
@@ -119,6 +136,7 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
             if (itemRefs.isNotEmpty()) { // ISSUE_ID_NONE
                 val latestId = itemRefs[0].issueId
                 preferences.edit().putInt(LATEST_ISSUE_ID, latestId).apply()
+                preferences.edit().putString(REFERENCE_ISSUES_ID, gson.toJson(itemRefs)).apply()
 
                 GlobalScope.launch {
                     withContext(Dispatchers.Main) { refList.value = itemRefs }

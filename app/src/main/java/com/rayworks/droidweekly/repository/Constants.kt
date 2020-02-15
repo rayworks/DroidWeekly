@@ -10,6 +10,8 @@ const val TABLE = "table"
 const val LATEST_ISSUE_ID = "latest_issue_id"
 const val SITE_URL = "http://androidweekly.net" // /issues/issue-302
 
+const val REFERENCE_ISSUES_ID = "reference_issues_id"
+
 const val DROID_WEEKLY = "DroidWeekly"
 const val TIMEOUT_IN_SECOND = 10
 const val ISSUE_ID_NONE = -1

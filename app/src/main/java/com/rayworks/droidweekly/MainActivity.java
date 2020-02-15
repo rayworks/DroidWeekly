@@ -37,6 +37,8 @@ import com.rayworks.droidweekly.viewmodel.ViewModelFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 import static com.rayworks.droidweekly.repository.Constants.LATEST_ISSUE_ID;
 import static com.rayworks.droidweekly.repository.Constants.PREF_ISSUE_INFO;
 
@@ -68,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(
                 menuItem -> {
                     int id = menuItem.getItemId();
+                    selectedItemId = id;
 
                     viewModel.setSelectedItemId(id);
 
@@ -161,12 +164,23 @@ public class MainActivity extends AppCompatActivity {
                 .observe(
                         this,
                         oldItemRefs -> {
+                            Menu menu = navigationView.getMenu();
+
+                            if (oldItemRefList != null && !oldItemRefList.isEmpty()
+                                    && oldItemRefList.get(0) == oldItemRefs.get(0)) {
+                                if (menu.size() > 0) {
+                                    Timber.i(">>> menu items already up-to-date, update the selection now");
+                                    setMenuItemCheckStatus(menu, true);
+                                }
+                                return;
+                            }
+
                             oldItemRefList = oldItemRefs;
                             if (oldItemRefList == null || oldItemRefList.isEmpty()) {
                                 return;
                             }
 
-                            Menu menu = navigationView.getMenu();
+
                             menu.clear();
 
                             int base = MENU_ID_BASE;

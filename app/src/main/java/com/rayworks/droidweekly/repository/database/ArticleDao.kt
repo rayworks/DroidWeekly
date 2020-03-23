@@ -21,7 +21,7 @@ interface ArticleDao {
     /***
      * Does a fuzzy search with provided [key]
      */
-    @Query("SELECT * from article WHERE description LIKE :key")
+    @Query("SELECT * from article WHERE description LIKE :key OR title LIKE :key")
     fun getArticleByKeyword(key: String): List<Article>
 
     /***

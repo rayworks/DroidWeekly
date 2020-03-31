@@ -66,7 +66,7 @@ class WebContentParser {
                 }
                 // build the issue menu items
                 itemRefs.add(
-                        0, OldItemRef("Issue $latestIssueId", "issues/issue-$latestId", latestId)
+                        0, OldItemRef("Issue $latestIssueId", "/issues/issue-$latestId", latestId)
                 )
             }
 

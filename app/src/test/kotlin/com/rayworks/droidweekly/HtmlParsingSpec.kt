@@ -20,6 +20,14 @@ object HtmlParsingSpec : Spek({
             assertEquals(399, refs[0].issueId)
 
             assertTrue(pair.first.isNotEmpty())
+
+            val prefix = "/issues/issue-"
+            assertTrue("First issue should have valid issue path") {
+                refs.first().relativePath.startsWith(prefix)
+            }
+            assertTrue("Last visible issue should have valid issue patqh") {
+                refs.last().relativePath.startsWith(prefix)
+            }
         }
     }
 

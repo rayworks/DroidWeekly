@@ -153,9 +153,14 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
 
             updateList(items)
 
-            // add the local cache
-            val entities = getArticleEntities(issueId, items)
-            articleDao.insertAll(entities)
+            val list = articleDao.getArticlesByIssue(issueId)
+            if (list.isNullOrEmpty()) {
+                // add the local cache
+                val entities = getArticleEntities(issueId, items)
+                articleDao.insertAll(entities)
+            } else {
+                Timber.w(">>> dump duplicate items in issue : %d", issueId);
+            }
 
         } catch (exception: IOException) {
             exception.printStackTrace()

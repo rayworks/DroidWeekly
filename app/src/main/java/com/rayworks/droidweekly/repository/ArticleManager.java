@@ -42,6 +42,10 @@ public final class ArticleManager {
     }
 
     public void search(String key, WeakReference<ArticleDataListener> listener) {
+        if(compositeDisposable.isDisposed()) {
+            compositeDisposable = new CompositeDisposable();
+        }
+
         Disposable disposable =
                 Observable.just("%" + key + "%") // for the fuzzy search
                         .map(str -> database.articleDao().getArticleByKeyword(str))

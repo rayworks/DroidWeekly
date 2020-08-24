@@ -11,9 +11,9 @@ android {
     compileSdkVersion 28
 
     // Add Kotlin source directory to all source sets
-    sourceSets.each {
-        it.java.srcDirs += "src/$it.name/kotlin"
-    }
+//    sourceSets.each {
+//        it.java.srcDirs += "src/$it.name/kotlin"
+//    }
 
     testOptions {
         junitPlatform {
@@ -57,6 +57,10 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
     // Always show the result of every unit test, even if it passes.

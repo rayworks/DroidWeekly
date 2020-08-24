@@ -24,21 +24,31 @@ import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.TimeUnit
 
+/***
+ * The page shows the search result based on cached historical articles
+ */
 class SearchActivity : AppCompatActivity(), ArticleDataListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var articleAdapter: ArticleAdapter
     private var searchView: SearchView? = null
     private var disposable: Disposable? = null
 
-    // legacy presenter support
-    class SearchPresenter {
-        private var disposable: Disposable? = null
 
+    /***
+     *  A presenter handles the searching by keywords.
+     */
+    class SearchPresenter {
+        /***
+         * Search specified keywords
+         */
         fun search(s: String, articleListener: WeakReference<ArticleDataListener>) {
             ArticleManager.getInstance()
                     .search(s, articleListener)
         }
 
+        /***
+         * Dispose the unused resources
+         */
         fun dispose() {
             ArticleManager.getInstance().dispose()
         }

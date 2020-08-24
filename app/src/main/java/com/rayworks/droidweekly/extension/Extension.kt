@@ -5,6 +5,9 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 
+/***
+ * Convert JSON string to specified data object
+ */
 inline fun <reified T> Gson.jsonToObject(str: String): T? {
     return try {
         fromJson(str, object : TypeToken<T>() {}.type)
@@ -39,9 +42,15 @@ inline fun <reified T> ViewModelStoreOwner.scoped(noinline creator: () -> T): La
     return LazyScopedValue({ viewModelStore }, { ScopeViewModel.Factory(creator) })
 }
 
+/***
+ * The [ViewModel] wrapper.
+ */
 class ScopeViewModel<V>(
         val value: V
 ) : ViewModel() {
+    /***
+     * The [ViewModelProvider.Factory] wrapper.
+     */
     class Factory<V>(val valueFactory: () -> V) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>): T =
@@ -50,6 +59,9 @@ class ScopeViewModel<V>(
     }
 }
 
+/***
+ * The lazy scoped generic object.
+ */
 class LazyScopedValue<T>(
         private val storeProducer: () -> ViewModelStore,
         private val factoryProducer: () -> ViewModelProvider.Factory

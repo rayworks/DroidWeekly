@@ -54,7 +54,7 @@ class MyViewHolder extends RecyclerView.ViewHolder {
         }
 
         if (TextUtils.isEmpty(item.getDescription())) {
-            title.setTextColor(Color.BLACK);
+//            title.setTextColor(Color.BLACK);
             title.setTextSize(unit, resources.getDimension(R.dimen.font_size_large));
 
             desc.setVisibility(View.GONE);

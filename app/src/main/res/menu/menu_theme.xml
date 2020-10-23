@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.rayworks.droidweekly.MainActivity">
+    <item
+        android:id="@+id/action_theme_day"
+        android:orderInCategory="100"
+        android:title="@string/action_theme_day"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_theme_night"
+        android:orderInCategory="100"
+        android:title="@string/action_theme_night"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_theme_sys"
+        android:orderInCategory="100"
+        android:title="@string/action_theme_sys"
+        app:showAsAction="never" />
+
+</menu>

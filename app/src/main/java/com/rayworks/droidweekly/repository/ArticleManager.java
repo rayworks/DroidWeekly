@@ -28,7 +28,7 @@ public final class ArticleManager {
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private ArticleManager() {
-        Context context = App.getApp().getApplicationContext();
+        Context context = App.get().getApplicationContext();
         initStorage(context);
     }
 

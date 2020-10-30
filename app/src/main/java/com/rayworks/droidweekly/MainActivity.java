@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.databinding.Observable;
@@ -238,13 +237,13 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         switch (id) {
             case R.id.action_theme_day:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                App.get().updateTheme(ThemeOption.Day, true);
                 break;
             case R.id.action_theme_night:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                App.get().updateTheme(ThemeOption.Night, true);
                 break;
             case R.id.action_theme_sys:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                App.get().updateTheme(ThemeOption.System, true);
                 break;
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);

@@ -9,10 +9,10 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.rayworks.droidweekly.databinding.ActivitySearchBinding
 import com.rayworks.droidweekly.extension.scoped
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.model.OldItemRef
@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit
 class SearchActivity : AppCompatActivity(), ArticleDataListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var articleAdapter: ArticleAdapter
+    private lateinit var binding : ActivitySearchBinding
     private var searchView: SearchView? = null
     private var disposable: Disposable? = null
 
@@ -58,15 +59,15 @@ class SearchActivity : AppCompatActivity(), ArticleDataListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_search)
+        binding = ActivitySearchBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
         val actionBar = supportActionBar
         actionBar!!.setDisplayHomeAsUpEnabled(true)
         actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_24dp)
 
-        recyclerView = findViewById(R.id.result_list)
+        recyclerView = binding.resultList
         articleAdapter = ArticleAdapter(this, ArrayList())
         articleAdapter.setViewArticleListener { url: String? ->
             val intent = Intent(Intent.ACTION_VIEW)

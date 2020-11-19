@@ -1,4 +1,4 @@
-package com.rayworks.droidweekly;
+package com.rayworks.droidweekly.utils;
 
 import androidx.appcompat.widget.SearchView;
 

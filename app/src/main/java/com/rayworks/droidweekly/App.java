@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.rayworks.droidweekly.model.ThemeOption;
+
 import timber.log.Timber;
 
 public class App extends Application {

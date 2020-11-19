@@ -1,4 +1,4 @@
-package com.rayworks.droidweekly;
+package com.rayworks.droidweekly.ui.component;
 
 import android.content.Context;
 
@@ -10,6 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.rayworks.droidweekly.R;
+import com.rayworks.droidweekly.dashboard.interfaces.OnViewArticleListener;
 import com.rayworks.droidweekly.model.ArticleItem;
 
 import java.util.ArrayList;

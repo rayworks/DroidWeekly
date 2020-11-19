@@ -1,4 +1,4 @@
-package com.rayworks.droidweekly
+package com.rayworks.droidweekly.search
 
 import android.content.Context
 import android.content.Intent
@@ -12,12 +12,15 @@ import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.rayworks.droidweekly.R
+import com.rayworks.droidweekly.utils.RxSearchObservable
 import com.rayworks.droidweekly.databinding.ActivitySearchBinding
-import com.rayworks.droidweekly.extension.scoped
+import com.rayworks.droidweekly.utils.scoped
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.ArticleManager
 import com.rayworks.droidweekly.repository.ArticleManager.ArticleDataListener
+import com.rayworks.droidweekly.ui.component.ArticleAdapter
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import java.lang.ref.WeakReference

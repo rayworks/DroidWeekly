@@ -3,7 +3,7 @@ package com.rayworks.droidweekly.repository
 import android.content.SharedPreferences
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
-import com.rayworks.droidweekly.extension.jsonToObject
+import com.rayworks.droidweekly.utils.jsonToObject
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.database.ArticleDao

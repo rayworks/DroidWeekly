@@ -1,4 +1,4 @@
-package com.rayworks.droidweekly;
+package com.rayworks.droidweekly.model;
 
 public enum ThemeOption {
     Day("day"),

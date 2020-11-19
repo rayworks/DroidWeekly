@@ -1,4 +1,4 @@
-package com.rayworks.droidweekly;
+package com.rayworks.droidweekly.ui.component;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -14,6 +14,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.rayworks.droidweekly.R;
 import com.rayworks.droidweekly.model.ArticleItem;
 
 class MyViewHolder extends RecyclerView.ViewHolder {

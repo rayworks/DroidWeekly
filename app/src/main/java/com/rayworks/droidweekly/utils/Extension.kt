@@ -1,4 +1,4 @@
-package com.rayworks.droidweekly.extension
+package com.rayworks.droidweekly.utils
 
 import androidx.lifecycle.*
 import com.google.gson.Gson

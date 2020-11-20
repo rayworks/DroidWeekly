@@ -2,6 +2,7 @@ package com.rayworks.droidweekly;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.net.Uri;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
@@ -12,6 +13,7 @@ import timber.log.Timber;
 public class App extends Application {
 
     private static App app;
+    private SharedPreferences pref;
 
     public static App get() {
         return app;
@@ -22,6 +24,8 @@ public class App extends Application {
         super.onCreate();
 
         app = this;
+
+        pref = getSharedPreferences("app_theme", MODE_PRIVATE);
 
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
@@ -45,17 +49,23 @@ public class App extends Application {
         }
 
         if (updatedNow) {
-            SharedPreferences pref = getSharedPreferences("app_theme", MODE_PRIVATE);
             pref.edit().putString("theme", option.getValue()).apply();
         }
     }
 
     public void applyTheme() {
-        SharedPreferences pref = getSharedPreferences("app_theme", MODE_PRIVATE);
         String theme = pref.getString("theme", null);
         if (theme != null) {
             updateTheme(ThemeOption.from(theme), false);
 
         }
+    }
+
+    public void saveLocalAvatar(Uri uri) {
+        pref.edit().putString("uri_avatar", uri.toString()).apply();
+    }
+
+    public String getLocalAvatar() {
+        return pref.getString("uri_avatar", "");
     }
 }

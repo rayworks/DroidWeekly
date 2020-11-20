@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     private int selectedItemId = MENU_ID_BASE;
     private SharedPreferences preferences;
     private View headerView;
+    private ImageView avatarImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,15 +96,49 @@ public class MainActivity extends AppCompatActivity {
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_24dp);
 
-        navigationView = findViewById(R.id.nav_view);
+        setupNavigationDrawer();
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(view -> SearchActivity.launch(MainActivity.this));
+
+        setupArticleList();
+
+        setupViewModel();
+
+        int lastSelected = viewModel.getSelectedItemId();
+        if (lastSelected > 0) {
+            selectedItemId = lastSelected;
+        }
+    }
+
+    private void setupArticleList() {
+        RecyclerView recyclerView = findViewById(R.id.recycler_list);
+        ArticleAdapter articleAdapter = new ArticleAdapter(this, new ArrayList<>());
+        articleAdapter.setViewArticleListener(
+                url -> {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(url));
+                    startActivity(intent);
+                });
+
+        recyclerView.setAdapter(articleAdapter);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addItemDecoration(
+                new DividerItemDecoration(this, layoutManager.getOrientation()));
+    }
+
+    private void setupNavigationDrawer() {
         drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
 
         headerView = LayoutInflater.from(this).inflate(R.layout.view_layout_nav_header, navigationView, false);
-        ImageView imageView = headerView.findViewById(R.id.avatar);
-        imageView.setOnClickListener(v -> {
-            Toast.makeText(this, "image clicked", Toast.LENGTH_SHORT).show();
-            promptPickingImage();
-        });
+        avatarImageView = headerView.findViewById(R.id.avatar);
+        avatarImageView.setOnClickListener(v -> promptPickingImage());
+        String localAvatar = App.get().getLocalAvatar();
+        if (!TextUtils.isEmpty(localAvatar)) {
+            loadAvatarIfAny(Uri.parse(localAvatar), avatarImageView);
+        }
         navigationView.addHeaderView(headerView);
 
         navigationView.setNavigationItemSelectedListener(
@@ -122,42 +158,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                     return true;
                 });
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(
-                view -> {
-                    /*viewModel.load(true);
-
-                    // reset menu item selection
-                    setMenuItemCheckStatus(navigationView.getMenu(), false);
-                    selectedItemId = -1;
-
-                    Snackbar.make(view, "Reloading now...", Snackbar.LENGTH_LONG).show();*/
-
-                    SearchActivity.launch(MainActivity.this);
-                });
-
-        RecyclerView recyclerView = findViewById(R.id.recycler_list);
-        ArticleAdapter articleAdapter = new ArticleAdapter(this, new ArrayList<>());
-        articleAdapter.setViewArticleListener(
-                url -> {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    startActivity(intent);
-                });
-
-        recyclerView.setAdapter(articleAdapter);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.addItemDecoration(
-                new DividerItemDecoration(this, layoutManager.getOrientation()));
-
-        setupViewModel();
-
-        int lastSelected = viewModel.getSelectedItemId();
-        if (lastSelected > 0) {
-            selectedItemId = lastSelected;
-        }
     }
 
     private void promptPickingImage() {
@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
         intent.putExtra(MediaStore.EXTRA_OUTPUT,
-                ImageUtilsKt.getCapturedImageUri(this, capturedImageName));
+                ImageUtilsKt.getCapturedImageOutputUri(this, capturedImageName));
         startActivityForResult(intent, REQUEST_CODE_PHONE_CAMERA);
     }
 
@@ -232,7 +232,9 @@ public class MainActivity extends AppCompatActivity {
                 Uri croppedImageUri = UCrop.getOutput(data);
                 if (croppedImageUri != null) {
                     Timber.i(">>> cropped path... %s", croppedImageUri.getPath());
-                    Glide.with(this).load(croppedImageUri).into((ImageView) headerView.findViewById(R.id.avatar));
+                    App.get().saveLocalAvatar(croppedImageUri);
+
+                    loadAvatarIfAny(croppedImageUri, avatarImageView);
                 }
             }
             break;
@@ -244,12 +246,16 @@ public class MainActivity extends AppCompatActivity {
 
             case REQUEST_CODE_PHONE_CAMERA: {
                 // retrieve the persisted file
-                Uri capturedImageUri = ImageUtilsKt.getCapturedImageUri(this, capturedImageName);
+                Uri capturedImageUri = ImageUtilsKt.getCapturedImageOutputUri(this, capturedImageName);
                 ImageUtilsKt.cropImage(this, capturedImageUri);
             }
             break;
         }
 
+    }
+
+    private void loadAvatarIfAny(Uri imageUri, ImageView imageView) {
+        Glide.with(this).load(imageUri).into(imageView);
     }
 
     @Override

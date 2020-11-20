@@ -88,7 +88,7 @@ fun getAuthority(): String {
     return BuildConfig.APPLICATION_ID + ".fileprovider"
 }
 
-fun getCapturedImageUri(context: Context, imageName: String): Uri {
+fun getCapturedImageOutputUri(context: Context, imageName: String): Uri {
     val capturedImgFile = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), imageName)
 
     return FileProvider.getUriForFile(context, getAuthority(), capturedImgFile)

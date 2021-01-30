@@ -14,6 +14,9 @@ import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
+/***
+ * Setup the providers of Application dependencies.
+ */
 @InstallIn(ApplicationComponent::class)
 @Module
 object AppModule {

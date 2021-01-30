@@ -6,7 +6,9 @@ import com.rayworks.droidweekly.di.KeyValueStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-
+/***
+ * The KV storage [KeyValueStorage] implementation on Android platform.
+ */
 class AndroidKVStorage @Inject constructor(@ApplicationContext val context: Context) : KeyValueStorage {
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_ISSUE_INFO, Context.MODE_PRIVATE)
 

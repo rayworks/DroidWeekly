@@ -167,8 +167,6 @@ public class MainActivity extends AppCompatActivity {
         MenuInflater inflater = popupMenu.getMenuInflater();
         Menu menu = popupMenu.getMenu();
         inflater.inflate(R.menu.menu_image_selection, menu);
-        MenuItem byCamera = menu.findItem(R.id.take_photo);
-        MenuItem fromAlbum = menu.findItem(R.id.from_album);
 
         popupMenu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.from_album) {
@@ -252,6 +250,8 @@ public class MainActivity extends AppCompatActivity {
                 ImageUtilsKt.cropImage(this, capturedImageUri);
             }
             break;
+            default:
+                break;
         }
 
     }

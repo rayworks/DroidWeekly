@@ -2,10 +2,7 @@ package com.rayworks.droidweekly.dashboard;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -42,13 +39,10 @@ import com.google.android.material.navigation.NavigationView;
 import com.rayworks.droidweekly.App;
 import com.rayworks.droidweekly.R;
 import com.rayworks.droidweekly.databinding.ActivityMainBinding;
+import com.rayworks.droidweekly.di.KeyValueStorage;
 import com.rayworks.droidweekly.model.OldItemRef;
 import com.rayworks.droidweekly.model.ThemeOption;
 import com.rayworks.droidweekly.repository.ArticleRepository;
-import com.rayworks.droidweekly.repository.WebContentParser;
-import com.rayworks.droidweekly.repository.database.ArticleDao;
-import com.rayworks.droidweekly.repository.database.IssueDatabase;
-import com.rayworks.droidweekly.repository.database.IssueDatabaseKt;
 import com.rayworks.droidweekly.search.SearchActivity;
 import com.rayworks.droidweekly.ui.component.ArticleAdapter;
 import com.rayworks.droidweekly.utils.ImageUtilsKt;
@@ -59,11 +53,14 @@ import com.yalantis.ucrop.UCrop;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
 
 import static com.rayworks.droidweekly.repository.Constants.LATEST_ISSUE_ID;
-import static com.rayworks.droidweekly.repository.Constants.PREF_ISSUE_INFO;
 
+@AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
     private final int REQUEST_STORAGE_WRITE_ACCESS_PERMISSION = 0xF1;
     private final int REQUEST_CAMERA_ACCESS_PERMISSION = 0xF2;
@@ -80,9 +77,14 @@ public class MainActivity extends AppCompatActivity {
     private List<OldItemRef> oldItemRefList;
 
     private int selectedItemId = MENU_ID_BASE;
-    private SharedPreferences preferences;
     private View headerView;
     private ImageView avatarImageView;
+
+    @Inject
+    ArticleRepository articleRepository;
+
+    @Inject
+    KeyValueStorage keyValueStorage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -276,14 +278,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupViewModel() {
-        IssueDatabase database = IssueDatabaseKt.getDatabase(this);
-        ArticleDao articleDao = database.articleDao();
-
-        Application context = getApplication();
-        preferences = context.getSharedPreferences(PREF_ISSUE_INFO, Context.MODE_PRIVATE);
-
-        ViewModelFactory factory =
-                new ViewModelFactory(this, null, new ArticleRepository(articleDao, preferences, new WebContentParser()));
+        ViewModelFactory factory = new ViewModelFactory(this, null, articleRepository);
         viewModel = new ViewModelProvider(this, factory).get(ArticleListViewModel.class);
 
         ActivityMainBinding dataBinding = ActivityMainBinding.bind(findViewById(R.id.drawer_layout));
@@ -366,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
             viewModel.load(false);
         } else {
             // FIXME: the detailed path should be hidden
-            int id = preferences.getInt(LATEST_ISSUE_ID, 0);
+            int id = keyValueStorage.getInt(LATEST_ISSUE_ID, 0);
             int selected = id - (selectedItemId - MENU_ID_BASE);
 
             viewModel.loadBy("/issues/issue-" + selected);

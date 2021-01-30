@@ -1,13 +1,13 @@
 package com.rayworks.droidweekly.repository
 
-import android.content.SharedPreferences
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
-import com.rayworks.droidweekly.utils.jsonToObject
+import com.rayworks.droidweekly.di.KeyValueStorage
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.database.ArticleDao
 import com.rayworks.droidweekly.repository.database.entity.Article
+import com.rayworks.droidweekly.utils.jsonToObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -18,11 +18,12 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 /***
  * A repository as the data entry to load the article items.
  */
-class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPreferences, val parser: WebContentParser) {
+class ArticleRepository @Inject constructor(val articleDao: ArticleDao, val preferences: KeyValueStorage, val parser: WebContentParser) {
     var refList: MutableLiveData<List<OldItemRef>> = MutableLiveData()
 
     var articleList: MutableLiveData<List<ArticleItem>> = MutableLiveData()
@@ -135,8 +136,8 @@ class ArticleRepository(val articleDao: ArticleDao, val preferences: SharedPrefe
             // notify data changes
             if (itemRefs.isNotEmpty()) { // ISSUE_ID_NONE
                 val latestId = itemRefs[0].issueId
-                preferences.edit().putInt(LATEST_ISSUE_ID, latestId).apply()
-                preferences.edit().putString(REFERENCE_ISSUES_ID, gson.toJson(itemRefs)).apply()
+                preferences.putInt(LATEST_ISSUE_ID, latestId)
+                preferences.putString(REFERENCE_ISSUES_ID, gson.toJson(itemRefs))
 
                 GlobalScope.launch {
                     withContext(Dispatchers.Main) { refList.value = itemRefs }

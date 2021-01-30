@@ -8,8 +8,10 @@ import androidx.appcompat.app.AppCompatDelegate;
 
 import com.rayworks.droidweekly.model.ThemeOption;
 
+import dagger.hilt.android.HiltAndroidApp;
 import timber.log.Timber;
 
+@HiltAndroidApp
 public class App extends Application {
 
     private static App app;

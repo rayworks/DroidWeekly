@@ -21,44 +21,50 @@ import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.ArticleManager
 import com.rayworks.droidweekly.repository.ArticleManager.ArticleDataListener
 import com.rayworks.droidweekly.ui.component.ArticleAdapter
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 /***
  * The page shows the search result based on cached historical articles
  */
+@AndroidEntryPoint
 class SearchActivity : AppCompatActivity(), ArticleDataListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var articleAdapter: ArticleAdapter
-    private lateinit var binding : ActivitySearchBinding
+    private lateinit var binding: ActivitySearchBinding
     private var searchView: SearchView? = null
     private var disposable: Disposable? = null
 
+    @Inject
+    lateinit var articleManager: ArticleManager
 
     /***
      *  A presenter handles the searching by keywords.
      */
-    class SearchPresenter {
+    class SearchPresenter(val articleManager: ArticleManager) {
+
         /***
          * Search specified keywords
          */
         fun search(s: String, articleListener: WeakReference<ArticleDataListener>) {
-            ArticleManager.getInstance()
-                    .search(s, articleListener)
+
+            articleManager.search(s, articleListener)
         }
 
         /***
          * Dispose the unused resources
          */
         fun dispose() {
-            ArticleManager.getInstance().dispose()
+            articleManager.dispose()
         }
     }
 
-    private val presenter by scoped { SearchPresenter() }
+    private val presenter by scoped { SearchPresenter(articleManager) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,7 +151,7 @@ class SearchActivity : AppCompatActivity(), ArticleDataListener {
     }
 
     override fun onComplete(items: List<ArticleItem>) {
-        articleAdapter!!.update(items)
+        articleAdapter.update(items)
     }
 
     override fun onDestroy() {

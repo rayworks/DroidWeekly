@@ -1,19 +1,18 @@
 package com.rayworks.droidweekly.repository;
 
-import android.content.Context;
-
 import androidx.annotation.NonNull;
 
-import com.rayworks.droidweekly.App;
 import com.rayworks.droidweekly.model.ArticleItem;
 import com.rayworks.droidweekly.model.OldItemRef;
-import com.rayworks.droidweekly.repository.database.IssueDatabase;
-import com.rayworks.droidweekly.repository.database.IssueDatabaseKt;
+import com.rayworks.droidweekly.repository.database.ArticleDao;
 import com.rayworks.droidweekly.repository.database.entity.Article;
 
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -21,24 +20,15 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
+@Singleton
 public final class ArticleManager {
-    // To be injected
-    private IssueDatabase database;
+    private ArticleDao articleDao;
 
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    private ArticleManager() {
-        Context context = App.get().getApplicationContext();
-        initStorage(context);
-    }
-
-    public static ArticleManager getInstance() {
-        return ManagerHolder.articleManager;
-    }
-
-    private void initStorage(Context context) {
-        // create database
-        database = IssueDatabaseKt.getDatabase(context);
+    @Inject
+    public ArticleManager(ArticleDao dao) {
+        this.articleDao = dao;
     }
 
     public void search(String key, WeakReference<ArticleDataListener> listener) {
@@ -48,7 +38,7 @@ public final class ArticleManager {
 
         Disposable disposable =
                 Observable.just("%" + key + "%") // for the fuzzy search
-                        .map(str -> database.articleDao().getArticleByKeyword(str))
+                        .map(str -> articleDao.getArticleByKeyword(str))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .singleOrError()
@@ -100,9 +90,5 @@ public final class ArticleManager {
         void onOldRefItemsLoaded(List<OldItemRef> itemRefs);
 
         void onComplete(List<ArticleItem> items);
-    }
-
-    private static class ManagerHolder {
-        private static ArticleManager articleManager = new ArticleManager();
     }
 }

@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'dagger.hilt.android.plugin'
 
 // Required as JUnit 5 doesn't support android modules out of the box.
 apply plugin: "de.mannodermaus.android-junit5"
@@ -120,6 +121,9 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kt_coroutines"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kt_coroutines"
+
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
 
     // test dependencies
     testImplementation 'junit:junit:4.12'

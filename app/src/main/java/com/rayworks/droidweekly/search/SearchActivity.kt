@@ -115,8 +115,8 @@ class SearchActivity : AppCompatActivity(), ArticleDataListener {
 
     private fun resetResult() {
         runOnUiThread {
-            if (!this@SearchActivity.isFinishing && recyclerView != null) {
-                articleAdapter!!.update(Collections.emptyList())
+            if (!this@SearchActivity.isFinishing) {
+                articleAdapter.update(Collections.emptyList())
             }
         }
     }

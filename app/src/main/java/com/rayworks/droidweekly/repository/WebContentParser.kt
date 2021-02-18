@@ -7,12 +7,19 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
-import java.util.*
+import java.util.LinkedList
 
 class WebContentParser {
     companion object {
+        var logEnabled: Boolean = false
+        fun debugPrint(message: Any?) {
+            if (logEnabled) {
+                println(message)
+            }
+        }
+
         fun parseColor(colorString: String): Int {
-            if (colorString.get(0) == '#') { // Use a long to avoid rollovers on #ffXXXXXX
+            if (colorString[0] == '#') { // Use a long to avoid rollovers on #ffXXXXXX
                 var color: Long = colorString.substring(1).toLong(16)
                 if (colorString.length == 7) { // Set the alpha value
                     color = color or -0x1000000
@@ -41,7 +48,7 @@ class WebContentParser {
                 val elements = li.getElementsByTag("a")
                 val refItem = elements[0]
                 val oldItemRef = OldItemRef(refItem.text(), refItem.attr("href"))
-                println("<<< old issue: " + refItem.text())
+                debugPrint("<<< old issue: " + refItem.text())
                 if (oldItemRef.relativePath.contains("issue-")) {
                     itemRefs.add(oldItemRef)
                 }
@@ -86,7 +93,7 @@ class WebContentParser {
         if (sections != null && !sections.isEmpty()) {
             val tables =
                     sections[0].getElementsByTag(TABLE)
-            println(">>> table size: " + tables.size)
+            debugPrint(">>> table size: " + tables.size)
             return parseArticleItems(tables)
         } else {
             throw WebContentParsingException("Parsing failure: sections not found")
@@ -128,9 +135,9 @@ class WebContentParser {
                 val headline = elementsByClass[0]
                 if (headline != null) {
                     val text = headline.text()
-                    println(">>> HEAD_LINE: $text")
+                    debugPrint(">>> HEAD_LINE: $text")
                     val href = headline.attr("href")
-                    println(">>> HEAD_URL : $href")
+                    debugPrint(">>> HEAD_URL : $href")
                     articleItem.title = text
                     articleItem.linkage = href
                 }
@@ -139,12 +146,12 @@ class WebContentParser {
             if (!paragraphs.isEmpty()) {
                 val description = paragraphs[0].text()
                 articleItem.description = description
-                println(">>> HEAD_DESC: $description")
+                debugPrint(">>> HEAD_DESC: $description")
             }
             var title = element.selectFirst("h2")
             if (title != null) {
                 val text = title.text()
-                println(">>>$text")
+                debugPrint(">>>$text")
                 articleItem.title = text
             } else { // tag Sponsored
                 title = element.selectFirst("h5")

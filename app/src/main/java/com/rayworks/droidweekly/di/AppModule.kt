@@ -10,14 +10,14 @@ import com.rayworks.droidweekly.repository.database.IssueDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 /***
  * Setup the providers of Application dependencies.
  */
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 @Module
 object AppModule {
     @Provides

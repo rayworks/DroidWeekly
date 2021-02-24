@@ -12,9 +12,9 @@ android {
     compileSdkVersion 29
 
     // Add Kotlin source directory to all source sets
-//    sourceSets.each {
-//        it.java.srcDirs += "src/$it.name/kotlin"
-//    }
+    sourceSets.each {
+        it.java.srcDirs += "src/$it.name/kotlin"
+    }
 
     testOptions {
         junitPlatform {
@@ -28,10 +28,6 @@ android {
                 html.enabled = true
                 xml.enabled = false
                 csv.enabled = false
-
-                unitTests.all {
-                    testLogging.events = ["passed", "skipped", "failed"]
-                }
             }
         }
         unitTests.all {
@@ -140,7 +136,6 @@ dependencies {
     // spek
     testImplementation "org.spekframework.spek2:spek-dsl-jvm:$spek_version"
     testImplementation "org.spekframework.spek2:spek-runner-junit5:$spek_version"
-
     // spek requires kotlin-reflect, omit when already in classpath
     testImplementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 

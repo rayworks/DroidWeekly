@@ -91,7 +91,7 @@ class ArticleRepository @Inject constructor(val articleDao: ArticleDao, val pref
             try {
                 // notify the cached historical ref data first if found any
                 val refItemStr = preferences.getString(REFERENCE_ISSUES_ID, "")
-                if (!refItemStr.isNullOrEmpty()) {
+                if (refItemStr.isNotEmpty()) {
                     val list = gson.jsonToObject<List<OldItemRef>>(refItemStr)
                     if (!list.isNullOrEmpty()) {
                         Timber.i(">>> cached ref items found with size : %d", list.size)
@@ -127,7 +127,7 @@ class ArticleRepository @Inject constructor(val articleDao: ArticleDao, val pref
             val request = Request.Builder().url(url).get().build()
             val response = okHttpClient.newCall(request).execute()
 
-            val data = response.body()!!.string();
+            val data = response.body!!.string();
             val pair = parser.parse(data)
 
             val items = pair.first

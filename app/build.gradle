@@ -84,7 +84,7 @@ dependencies {
 
     implementation "androidx.activity:activity-ktx:1.2.0"
     implementation 'com.google.android.material:material:1.3.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
 
     implementation 'com.github.yalantis:ucrop:2.2.6'
 
@@ -126,7 +126,7 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:$hilt_androidx_version"
 
     // test dependencies
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 

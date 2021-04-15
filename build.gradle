@@ -39,14 +39,31 @@ buildscript {
     }
 }
 
+plugins {
+    id("com.diffplug.gradle.spotless") version "3.27.1"
+}
+
 allprojects {
     repositories {
         google()
+        mavenCentral()
         jcenter()
         maven { url "https://jitpack.io" }
     }
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+subprojects {
+    apply plugin: "com.diffplug.gradle.spotless"
+
+    def ktlintVer = "0.36.0"
+    def map = new HashMap<String, String>()
+    map.put("max_line_length", "120")
+    map.put("disabled_rules", "import-ordering")
+
+    spotless {
+        kotlin {
+            target("**/*.kt")
+            ktlint(ktlintVer).userData(map)
+        }
+    }
 }

@@ -16,8 +16,10 @@ import javax.inject.Inject
 
 /** * The ViewModel for a list of articles.  */
 @HiltViewModel
-class ArticleListViewModel @Inject constructor (private val savedStateHandle: SavedStateHandle,
-                           private val manager: ArticleRepository) : ViewModel(),
+class ArticleListViewModel @Inject constructor (
+    private val savedStateHandle: SavedStateHandle,
+    private val manager: ArticleRepository
+) : ViewModel(),
         ArticleDataListener {
 
     val keyMenuId = "menu_item_id"
@@ -99,7 +101,7 @@ class ArticleListViewModel @Inject constructor (private val savedStateHandle: Sa
     }
 
     override fun onOldRefItemsLoaded(itemRefs: List<OldItemRef>) {
-        //this.itemRefs.set(itemRefs)
+        // this.itemRefs.set(itemRefs)
     }
 
     override fun onComplete(items: List<ArticleItem>) {
@@ -108,7 +110,7 @@ class ArticleListViewModel @Inject constructor (private val savedStateHandle: Sa
     }
 
     override fun onCleared() {
-        //manager.setDataListener(null)
+        // manager.setDataListener(null)
         super.onCleared()
     }
 }

@@ -23,10 +23,12 @@ const val ONE_MEGA_BYTES = 1024 * 1024
  */
 fun Activity.cropImage(imageUri: Uri) {
     val selectedBitmap: Bitmap? = getBitmap(this, imageUri)
-    val selectedImgFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), getTimestamp().toString() + "_selectedImg.jpg")
+    val selectedImgFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+            getTimestamp().toString() + "_selectedImg.jpg")
     convertBitmapToFile(selectedImgFile, selectedBitmap!!)
 
-    val croppedImgFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), getTimestamp().toString() + "_croppedImg.jpg")
+    val croppedImgFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+            getTimestamp().toString() + "_croppedImg.jpg")
     startCrop(this, Uri.fromFile(selectedImgFile), Uri.fromFile(croppedImgFile))
 }
 
@@ -55,14 +57,14 @@ private fun startCrop(context: Activity, sourceUri: Uri, destinationUri: Uri) {
 }
 
 fun convertBitmapToFile(destinationFile: File, bitmap: Bitmap) {
-    //create a file to write bitmap data
+    // create a file to write bitmap data
     destinationFile.createNewFile()
 
-    //Convert bitmap to byte array
+    // Convert bitmap to byte array
     val bos = ByteArrayOutputStream()
     bitmap.compress(Bitmap.CompressFormat.JPEG, 50, bos)
     val bitmapData = bos.toByteArray()
-    //write the bytes in file
+    // write the bytes in file
     val fos = FileOutputStream(destinationFile)
     fos.write(bitmapData)
     fos.flush()
@@ -75,7 +77,6 @@ fun getBitmap(context: Context, imageUri: Uri): Bitmap? {
                 ImageDecoder.createSource(
                         context.contentResolver,
                         imageUri))
-
     } else {
         context.contentResolver.openInputStream(imageUri)?.let {
             return BitmapFactory.decodeStream(it)

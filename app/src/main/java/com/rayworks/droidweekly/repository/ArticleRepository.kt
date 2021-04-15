@@ -16,14 +16,18 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import timber.log.Timber
 import java.io.IOException
-import java.util.*
+import java.util.LinkedList
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 /***
  * A repository as the data entry to load the article items.
  */
-class ArticleRepository @Inject constructor(val articleDao: ArticleDao, val preferences: KeyValueStorage, val parser: WebContentParser) {
+class ArticleRepository @Inject constructor(
+    val articleDao: ArticleDao,
+    val preferences: KeyValueStorage,
+    val parser: WebContentParser
+) {
     var refList: MutableLiveData<List<OldItemRef>> = MutableLiveData()
 
     var articleList: MutableLiveData<List<ArticleItem>> = MutableLiveData()
@@ -118,7 +122,6 @@ class ArticleRepository @Inject constructor(val articleDao: ArticleDao, val pref
                 setDataLoaded(false)
                 throw exp
             }
-
         }
     }
 
@@ -127,7 +130,7 @@ class ArticleRepository @Inject constructor(val articleDao: ArticleDao, val pref
             val request = Request.Builder().url(url).get().build()
             val response = okHttpClient.newCall(request).execute()
 
-            val data = response.body!!.string();
+            val data = response.body!!.string()
             val pair = parser.parse(data)
 
             val items = pair.first
@@ -146,7 +149,7 @@ class ArticleRepository @Inject constructor(val articleDao: ArticleDao, val pref
                 val articles: List<Article> = articleDao.getArticlesByIssue(latestId)
                 if (articles.isNotEmpty()) { // the latest issue content cache hits.
                     println(">>> cache hit for issue id : $latestId")
-                    //articleList.value = getArticleModels(articles)
+                    // articleList.value = getArticleModels(articles)
                     updateList(getArticleModels(articles))
                     return
                 }
@@ -160,9 +163,8 @@ class ArticleRepository @Inject constructor(val articleDao: ArticleDao, val pref
                 val entities = getArticleEntities(issueId, items)
                 articleDao.insertAll(entities)
             } else {
-                Timber.w(">>> dump duplicate items in issue : %d", issueId);
+                Timber.w(">>> dump duplicate items in issue : %d", issueId)
             }
-
         } catch (exception: IOException) {
             exception.printStackTrace()
 
@@ -194,8 +196,8 @@ class ArticleRepository @Inject constructor(val articleDao: ArticleDao, val pref
     }
 
     private fun getArticleEntities(
-            issueId: Int,
-            items: List<ArticleItem>
+        issueId: Int,
+        items: List<ArticleItem>
     ): List<Article> {
         val entities: MutableList<Article> = LinkedList()
         var index = 0

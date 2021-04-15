@@ -1,6 +1,10 @@
 package com.rayworks.droidweekly.utils
 
-import androidx.lifecycle.*
+import androidx.lifecycle.get
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.ViewModelStore
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -46,7 +50,7 @@ inline fun <reified T> ViewModelStoreOwner.scoped(noinline creator: () -> T): La
  * The [ViewModel] wrapper.
  */
 class ScopeViewModel<V>(
-        val value: V
+    val value: V
 ) : ViewModel() {
     /***
      * The [ViewModelProvider.Factory] wrapper.
@@ -63,8 +67,8 @@ class ScopeViewModel<V>(
  * The lazy scoped generic object.
  */
 class LazyScopedValue<T>(
-        private val storeProducer: () -> ViewModelStore,
-        private val factoryProducer: () -> ViewModelProvider.Factory
+    private val storeProducer: () -> ViewModelStore,
+    private val factoryProducer: () -> ViewModelProvider.Factory
 ) : Lazy<T> {
     private var cached: Any = NotSet
 

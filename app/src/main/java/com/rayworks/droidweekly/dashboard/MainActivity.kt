@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
         recyclerView.addItemDecoration(
-            DividerItemDecoration(this, layoutManager.orientation)
+                DividerItemDecoration(this, layoutManager.orientation)
         )
     }
 
@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
         drawerLayout = findViewById(R.id.drawer_layout)
         navigationView = findViewById(R.id.nav_view)
         headerView = LayoutInflater.from(this)
-            .inflate(R.layout.view_layout_nav_header, navigationView, false)
+                .inflate(R.layout.view_layout_nav_header, navigationView, false)
         avatarImageView = headerView.findViewById(R.id.avatar)
         avatarImageView?.setOnClickListener { v: View? -> promptPickingImage() }
         val localAvatar = App.get().localAvatar
@@ -142,28 +142,19 @@ class MainActivity : AppCompatActivity() {
         inflater.inflate(R.menu.menu_image_selection, menu)
         popupMenu.setOnMenuItemClickListener { item: MenuItem ->
             if (item.itemId == R.id.from_album) {
-                if (ActivityCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(
-                        this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        REQUEST_STORAGE_WRITE_ACCESS_PERMISSION
-                    )
+                            this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                            REQUEST_STORAGE_WRITE_ACCESS_PERMISSION)
                 } else {
                     requestPickImage()
                 }
             } else {
-                if (ActivityCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.CAMERA
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    ActivityCompat.requestPermissions(
-                        this, arrayOf(Manifest.permission.CAMERA),
-                        REQUEST_CAMERA_ACCESS_PERMISSION
-                    )
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
+                            REQUEST_CAMERA_ACCESS_PERMISSION)
                 } else {
                     requestTakeShot()
                 }
@@ -180,8 +171,8 @@ class MainActivity : AppCompatActivity() {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         intent.putExtra(
-            MediaStore.EXTRA_OUTPUT,
-            getCapturedImageOutputUri(this, capturedImageName)
+                MediaStore.EXTRA_OUTPUT,
+                getCapturedImageOutputUri(this, capturedImageName)
         )
         startActivityForResult(intent, REQUEST_CODE_PHONE_CAMERA)
     }
@@ -213,7 +204,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             REQUEST_CODE_PHONE_ALBUM -> if (data != null && data.data != null) this.cropImage(
-                data.data!!
+                    data.data!!
             )
             REQUEST_CODE_PHONE_CAMERA -> {
 
@@ -254,55 +245,51 @@ class MainActivity : AppCompatActivity() {
         // enables MutableLiveData to be update on your UI
         dataBinding.lifecycleOwner = this
         viewModel.articleLoaded.addOnPropertyChangedCallback(
-            object : OnPropertyChangedCallback() {
-                override fun onPropertyChanged(sender: Observable, propertyId: Int) {
-                    if (!viewModel.articleLoaded.get()) {
+                object : OnPropertyChangedCallback() {
+                    override fun onPropertyChanged(sender: Observable, propertyId: Int) {
+                        if (!viewModel.articleLoaded.get()) {
 
-                        // reset for next round
-                        viewModel.articleLoaded.set(true)
-                        val toast = Toast.makeText(
-                            this@MainActivity,
-                            "Failed to load content, please try again late",
-                            Toast.LENGTH_SHORT
-                        )
-                        toast.setGravity(Gravity.CENTER, 0, 0)
-                        toast.show()
-                    }
-                }
-            })
-        viewModel
-            .itemRefs
-            .observe(
-                this,
-                { oldItemRefs: List<OldItemRef> ->
-                    val menu = navigationView.menu
-                    if (oldItemRefList != null && !oldItemRefList!!.isEmpty()
-                        && oldItemRefList!![0] === oldItemRefs[0]
-                    ) {
-                        if (menu.size() > 0) {
-                            Timber.i(">>> menu items already up-to-date, update the selection now")
-                            setMenuItemCheckStatus(menu, true)
+                            // reset for next round
+                            viewModel.articleLoaded.set(true)
+                            val toast = Toast.makeText(
+                                    this@MainActivity,
+                                    "Failed to load content, please try again late",
+                                    Toast.LENGTH_SHORT
+                            )
+                            toast.setGravity(Gravity.CENTER, 0, 0)
+                            toast.show()
                         }
-                        return@observe
                     }
-                    oldItemRefList = oldItemRefs
-                    if (oldItemRefList == null || oldItemRefList!!.isEmpty()) {
-                        return@observe
-                    }
-                    menu.clear()
-                    var base = MENU_ID_BASE
-                    for ((title) in oldItemRefList!!) {
-                        val pos = base++
-                        menu.add(0, pos, pos, title)
-                    }
-
-                    // set exclusive item check
-                    menu.setGroupCheckable(0, true, true)
-
-                    // default selection
-                    setMenuItemCheckStatus(menu, true)
-                    navigationView.invalidate()
                 })
+        viewModel.itemRefs.observe(this, { oldItemRefs: List<OldItemRef> ->
+            val menu = navigationView.menu
+            if (oldItemRefList != null && !oldItemRefList!!.isEmpty() &&
+                    oldItemRefList!![0] === oldItemRefs[0]
+            ) {
+                if (menu.size() > 0) {
+                    Timber.i(">>> menu items already up-to-date, update the selection now")
+                    setMenuItemCheckStatus(menu, true)
+                }
+                return@observe
+            }
+            oldItemRefList = oldItemRefs
+            if (oldItemRefList == null || oldItemRefList!!.isEmpty()) {
+                return@observe
+            }
+            menu.clear()
+            var base = MENU_ID_BASE
+            for ((title) in oldItemRefList!!) {
+                val pos = base++
+                menu.add(0, pos, pos, title)
+            }
+
+            // set exclusive item check
+            menu.setGroupCheckable(0, true, true)
+
+            // default selection
+            setMenuItemCheckStatus(menu, true)
+            navigationView.invalidate()
+        })
     }
 
     private fun setMenuItemCheckStatus(menu: Menu, checked: Boolean) {

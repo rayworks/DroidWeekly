@@ -25,9 +25,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import java.lang.ref.WeakReference
-import java.util.*
+import java.util.Collections
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.collections.ArrayList
 
 /***
  * The page shows the search result based on cached historical articles

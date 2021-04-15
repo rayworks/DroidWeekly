@@ -78,14 +78,13 @@ class WebContentParser {
             }
 
             items = parseSections(issue)
-
         } else if (currentIssues.isNotEmpty()) {
             items = parseArticleItemsForIssue(doc)
         } else {
             throw WebContentParsingException("NO issue data found")
         }
 
-        return Pair(items, itemRefs);
+        return Pair(items, itemRefs)
     }
 
     private fun parseSections(issue: Element): List<ArticleItem> {

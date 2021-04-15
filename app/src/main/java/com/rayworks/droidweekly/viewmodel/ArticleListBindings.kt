@@ -12,8 +12,8 @@ object ArticleListBindings {
     @JvmStatic
     @BindingAdapter("app:items")
     fun setItems(
-            listView: RecyclerView,
-            items: List<ArticleItem>?
+        listView: RecyclerView,
+        items: List<ArticleItem>?
     ) {
         val adapter = listView.adapter as ArticleAdapter?
         adapter?.update(items)

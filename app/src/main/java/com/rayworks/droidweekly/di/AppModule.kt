@@ -46,6 +46,6 @@ object AppModule {
 
     @Provides
     fun provideWebContentParser(): WebContentParser {
-        return WebContentParser();
+        return WebContentParser()
     }
 }

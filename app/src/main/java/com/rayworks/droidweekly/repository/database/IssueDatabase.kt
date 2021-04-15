@@ -1,10 +1,7 @@
 package com.rayworks.droidweekly.repository.database
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.rayworks.droidweekly.repository.ArticleRepository
 import com.rayworks.droidweekly.repository.database.entity.Article
 
 /***

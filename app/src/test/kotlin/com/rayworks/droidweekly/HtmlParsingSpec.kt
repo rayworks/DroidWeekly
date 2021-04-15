@@ -43,6 +43,5 @@ object HtmlParsingSpec : Spek({
             assertTrue(pair.first.isNotEmpty())
             assertEquals("Articles & Tutorials", pair.first[0].title)
         }
-
     }
 })

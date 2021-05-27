@@ -27,41 +27,46 @@ class ArticleRepository @Inject constructor(
     val articleDao: ArticleDao,
     val preferences: KeyValueStorage,
     val parser: WebContentParser
-) {
-    var refList: MutableLiveData<List<OldItemRef>> = MutableLiveData()
+) : IArticleRepository {
+    private var _refList: MutableLiveData<List<OldItemRef>> = MutableLiveData()
+    private var _articleList: MutableLiveData<List<ArticleItem>> = MutableLiveData()
 
-    var articleList: MutableLiveData<List<ArticleItem>> = MutableLiveData()
+    private var articleLoaded = MutableLiveData<Boolean>()
 
-    var articleLoaded = MutableLiveData<Boolean>()
-
-    private var okHttpClient: OkHttpClient
+    private var okHttpClient: OkHttpClient = OkHttpClient.Builder()
+        .readTimeout(
+            TIMEOUT_IN_SECOND.toLong(),
+            TimeUnit.SECONDS
+        )
+        .writeTimeout(10, TimeUnit.SECONDS)
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .addInterceptor(AgentInterceptor(DROID_WEEKLY))
+        .build()
 
     private val gson = Gson()
 
-    init {
-
-        okHttpClient = OkHttpClient.Builder()
-                .readTimeout(
-                        TIMEOUT_IN_SECOND.toLong(),
-                        TimeUnit.SECONDS
-                )
-                .writeTimeout(10, TimeUnit.SECONDS)
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .addInterceptor(AgentInterceptor(DROID_WEEKLY))
-                .build()
-    }
+    override var refList: MutableLiveData<List<OldItemRef>>
+        get() = _refList
+        set(value) {
+            _refList = value
+        }
+    override var articleList: MutableLiveData<List<ArticleItem>>
+        get() = _articleList
+        set(value) {
+            _articleList = value
+        }
 
     /***
      * Loads the latest issue.
      */
-    suspend fun loadData() {
+    override suspend fun loadData() {
         load(SITE_URL, ISSUE_ID_NONE)
     }
 
     /***
      * Loads the historical issue.
      */
-    suspend fun loadData(urlSubPath: String) {
+    override suspend fun loadData(urlSubPath: String) {
         var id = ISSUE_ID_NONE
         // format like : issues/issue-302
         val segments = urlSubPath.split("-").toTypedArray()
@@ -90,7 +95,7 @@ class ArticleRepository @Inject constructor(
     /***
      * Loads the issue content.
      */
-    suspend fun load(url: String, issueId: Int) {
+    private suspend fun load(url: String, issueId: Int) {
         withContext(Dispatchers.IO) {
             try {
                 // notify the cached historical ref data first if found any
@@ -100,7 +105,7 @@ class ArticleRepository @Inject constructor(
                     if (!list.isNullOrEmpty()) {
                         Timber.i(">>> cached ref items found with size : %d", list.size)
                         GlobalScope.launch {
-                            withContext(Dispatchers.Main) { refList.value = list }
+                            withContext(Dispatchers.Main) { _refList.value = list }
                         }
                     }
                 }
@@ -171,7 +176,7 @@ class ArticleRepository @Inject constructor(
             val lastId = preferences.getInt(LATEST_ISSUE_ID, 0)
             if (lastId > 0 && issueId == ISSUE_ID_NONE) {
                 val articleList: List<Article> =
-                        articleDao.getArticlesByIssue(lastId)
+                    articleDao.getArticlesByIssue(lastId)
 
                 updateList(getArticleModels(articleList))
 
@@ -186,7 +191,7 @@ class ArticleRepository @Inject constructor(
         val items: MutableList<ArticleItem> = LinkedList()
         for (article in articles) {
             val articleItem = ArticleItem(
-                    article.title, article.description, article.linkage
+                article.title, article.description, article.linkage
             )
             articleItem.imgFrameColor = article.imgFrameColor
             articleItem.imageUrl = article.imageUrl
@@ -204,13 +209,13 @@ class ArticleRepository @Inject constructor(
         for (item in items) {
             ++index
             val article = Article(
-                    title = item.title,
-                    description = item.description,
-                    imageUrl = item.imageUrl ?: "",
-                    imgFrameColor = item.imgFrameColor,
-                    linkage = item.linkage,
-                    order = index,
-                    issueId = issueId
+                title = item.title,
+                description = item.description,
+                imageUrl = item.imageUrl ?: "",
+                imgFrameColor = item.imgFrameColor,
+                linkage = item.linkage,
+                order = index,
+                issueId = issueId
             )
             entities.add(article)
         }

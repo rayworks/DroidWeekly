@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.ArticleManager.ArticleDataListener
-import com.rayworks.droidweekly.repository.ArticleRepository
+import com.rayworks.droidweekly.repository.IArticleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -18,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ArticleListViewModel @Inject constructor (
     private val savedStateHandle: SavedStateHandle,
-    private val manager: ArticleRepository
+    private val manager: IArticleRepository
 ) : ViewModel(),
         ArticleDataListener {
 

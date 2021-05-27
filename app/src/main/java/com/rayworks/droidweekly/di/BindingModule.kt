@@ -1,6 +1,8 @@
 package com.rayworks.droidweekly.di
 
 import com.rayworks.droidweekly.repository.AndroidKVStorage
+import com.rayworks.droidweekly.repository.ArticleRepository
+import com.rayworks.droidweekly.repository.IArticleRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -12,11 +14,16 @@ import javax.inject.Singleton
  */
 @InstallIn(SingletonComponent::class)
 @Module
-abstract class KeyValueStorageModule {
+abstract class BindingModule {
     /***
      * The method does the action binding
      */
     @Singleton
     @Binds
     abstract fun bindKvStorage(impl: AndroidKVStorage): KeyValueStorage
+
+
+    @Singleton
+    @Binds
+    abstract fun bindRepo(repo: ArticleRepository) : IArticleRepository
 }

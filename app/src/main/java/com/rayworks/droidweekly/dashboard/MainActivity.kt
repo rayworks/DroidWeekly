@@ -8,11 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.TextUtils
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -36,7 +32,6 @@ import com.rayworks.droidweekly.databinding.ActivityMainBinding
 import com.rayworks.droidweekly.di.KeyValueStorage
 import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.model.ThemeOption
-import com.rayworks.droidweekly.repository.ArticleRepository
 import com.rayworks.droidweekly.repository.LATEST_ISSUE_ID
 import com.rayworks.droidweekly.search.SearchActivity.Companion.launch
 import com.rayworks.droidweekly.ui.component.ArticleAdapter
@@ -46,7 +41,7 @@ import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
-import java.util.ArrayList
+import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -66,10 +61,6 @@ class MainActivity : AppCompatActivity() {
     private var selectedItemId = MENU_ID_BASE
     private lateinit var headerView: View
     private var avatarImageView: ImageView? = null
-
-    @JvmField
-    @Inject
-    var articleRepository: ArticleRepository? = null
 
     @JvmField
     @Inject

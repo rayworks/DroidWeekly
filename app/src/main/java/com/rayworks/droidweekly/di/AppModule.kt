@@ -20,30 +20,42 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 @Module
 object AppModule {
+    /***
+     * Provides a singleton [IssueDatabase] instance
+     */
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): IssueDatabase {
         return Room
-                .databaseBuilder(
-                        context.applicationContext,
-                        IssueDatabase::class.java,
-                        DATABASE_NAME
-                )
-                .fallbackToDestructiveMigration()
-                .build()
+            .databaseBuilder(
+                context.applicationContext,
+                IssueDatabase::class.java,
+                DATABASE_NAME
+            )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
+    /***
+     * Provides a singleton [IssueDatabase] implementation
+     */
     @Provides
     fun provideArticleDao(issueDatabase: IssueDatabase): ArticleDao {
         return issueDatabase.articleDao()
     }
 
+    /***
+     * Provides a singleton [ArticleManager] instance
+     */
     @Singleton
     @Provides
     fun provideArticleManager(articleDao: ArticleDao): ArticleManager {
         return ArticleManager(articleDao)
     }
 
+    /***
+     * Provides a [WebContentParser] instance
+     */
     @Provides
     fun provideWebContentParser(): WebContentParser {
         return WebContentParser()

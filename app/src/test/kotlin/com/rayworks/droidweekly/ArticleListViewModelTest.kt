@@ -17,6 +17,9 @@ import org.mockito.Mockito
 import org.mockito.Mockito.doReturn
 import org.mockito.junit.MockitoJUnitRunner
 
+/***
+ * The mockito test for [ArticleListViewModel]
+ */
 @ExperimentalCoroutinesApi
 @RunWith(MockitoJUnitRunner::class)
 class ArticleListViewModelTest {
@@ -26,14 +29,17 @@ class ArticleListViewModelTest {
     @get:Rule
     val testCoroutineRule = TestCoroutineRule()
 
-    private val stateHandle:SavedStateHandle = SavedStateHandle()
+    private val stateHandle: SavedStateHandle = SavedStateHandle()
 
     @Mock
     private lateinit var articleRepository: IArticleRepository
 
     @Mock
-    private lateinit var observable:Observer<List<ArticleItem>>
+    private lateinit var observable: Observer<List<ArticleItem>>
 
+    /***
+     * Test method for loading article content
+     */
     @Test
     fun `test basic loading data`() {
         testCoroutineRule.runBlockingTest {

@@ -16,14 +16,16 @@ import javax.inject.Singleton
 @Module
 abstract class BindingModule {
     /***
-     * The method does the action binding
+     * The method does the actual binding for [KeyValueStorage]
      */
     @Singleton
     @Binds
     abstract fun bindKvStorage(impl: AndroidKVStorage): KeyValueStorage
 
-
+    /***
+     * Binds the [IArticleRepository] to its implementation
+     */
     @Singleton
     @Binds
-    abstract fun bindRepo(repo: ArticleRepository) : IArticleRepository
+    abstract fun bindRepo(repo: ArticleRepository): IArticleRepository
 }

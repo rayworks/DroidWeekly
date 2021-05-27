@@ -92,9 +92,6 @@ class ArticleRepository @Inject constructor(
         }
     }
 
-    /***
-     * Loads the issue content.
-     */
     private suspend fun load(url: String, issueId: Int) {
         withContext(Dispatchers.IO) {
             try {

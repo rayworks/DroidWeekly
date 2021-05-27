@@ -2,11 +2,18 @@ package com.rayworks.droidweekly.utils
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 
+/***
+ * The custom Coroutine Test rule.
+ */
 @ExperimentalCoroutinesApi
 class TestCoroutineRule : TestRule {
 
@@ -26,7 +33,9 @@ class TestCoroutineRule : TestRule {
         }
     }
 
+    /***
+     * Convenience method for calling [runBlockingTest] on an existing [TestCoroutineScope] with Coroutine.
+     */
     fun runBlockingTest(block: suspend TestCoroutineScope.() -> Unit) =
         testCoroutineScope.runBlockingTest { block() }
-
 }

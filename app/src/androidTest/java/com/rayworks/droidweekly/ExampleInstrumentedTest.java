@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getContext();
 
-        assertEquals("com.rayworks.droidweekly", appContext.getPackageName());
+        assertEquals("com.rayworks.droidweekly.test", appContext.getPackageName());
     }
 }

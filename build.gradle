@@ -19,6 +19,9 @@ buildscript {
 
         hilt_version = '2.31.2-alpha'
         hilt_androidx_version = '1.0.0-alpha03'
+
+        greenrobot_eventbus = 'org.greenrobot:eventbus:3.2.0'
+        event_bus_compiler = 'org.greenrobot:eventbus-annotation-processor:3.2.0'
     }
 
     repositories {

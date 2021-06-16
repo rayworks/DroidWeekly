@@ -44,6 +44,9 @@ import com.rayworks.droidweekly.utils.getCapturedImageOutputUri
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -88,6 +91,18 @@ class MainActivity : AppCompatActivity() {
         if (lastSelected > 0) {
             selectedItemId = lastSelected
         }
+
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public fun onHandleEvent(evt:TestEvent) {
+        Timber.d(">>> Event received: $evt")
     }
 
     private fun setupArticleList() {
@@ -310,6 +325,8 @@ class MainActivity : AppCompatActivity() {
             val selected = id - (selectedItemId - MENU_ID_BASE)
             viewModel.loadBy("/issues/issue-$selected")
         }
+
+        EventBus.getDefault().postSticky(TestEvent())
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

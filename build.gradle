@@ -26,8 +26,8 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
         maven { url "https://jitpack.io" }
+        jcenter()
     }
     dependencies {
         classpath "com.android.tools.build:gradle:$android_gradle_version"
@@ -39,6 +39,8 @@ buildscript {
         classpath "de.mannodermaus.gradle.plugins:android-junit5:$junit5Version"
 
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
+
+        classpath 'com.github.rayworks:AspectDroidPlugin:0.1.1'
     }
 }
 
@@ -49,9 +51,9 @@ plugins {
 allprojects {
     repositories {
         google()
+        maven { url "https://jitpack.io" }
         mavenCentral()
         jcenter()
-        maven { url "https://jitpack.io" }
     }
 }
 

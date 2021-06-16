@@ -7,9 +7,12 @@ import android.net.Uri;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import com.rayworks.droidweekly.dashboard.MyEventBusIndex;
+import com.rayworks.droidweekly.dashboard.TestEvent;
 import com.rayworks.droidweekly.model.ThemeOption;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import dagger.hilt.android.HiltAndroidApp;
 import timber.log.Timber;
@@ -39,6 +42,12 @@ public class App extends Application {
         applyTheme();
 
         EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
+        EventBus.getDefault().register(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onHandleEventInApp(TestEvent event) {
+        Timber.i(">>> Event captured in application : %s", event);
     }
 
 

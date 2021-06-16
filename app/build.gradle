@@ -8,6 +8,8 @@ apply plugin: 'dagger.hilt.android.plugin'
 // Required as JUnit 5 doesn't support android modules out of the box.
 apply plugin: "de.mannodermaus.android-junit5"
 
+apply plugin: 'org.aspect.droid'
+
 android {
     compileSdkVersion 29
 
@@ -149,13 +151,13 @@ dependencies {
     kapt rootProject.ext.event_bus_compiler
 
 //    implementation 'org.aspectj:aspectjrt:1.8.8'
-    implementation 'org.aspectj:aspectjtools:1.9.6'
-    implementation ('com.github.rayworks:AspectDroidPlugin:kotlin_support-SNAPSHOT') {
-        exclude group : 'org.aspectj', module: 'aspectjrt'
-        exclude group : 'org.aspectj', module : 'aspectjtools'
-
-        exclude group: 'com.android.tools.build', module : 'gradle'
-    }
+//    implementation 'org.aspectj:aspectjtools:1.9.6'
+//    implementation ('com.github.rayworks:AspectDroidPlugin:kotlin_support-SNAPSHOT') {
+//        exclude group : 'org.aspectj', module: 'aspectjrt'
+//        exclude group : 'org.aspectj', module : 'aspectjtools'
+//
+//        exclude group: 'com.android.tools.build', module : 'gradle'
+//    }
 
     // test dependencies
     testImplementation 'junit:junit:4.13.2'

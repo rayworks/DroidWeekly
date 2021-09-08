@@ -9,8 +9,6 @@ import com.rayworks.droidweekly.repository.database.ArticleDao
 import com.rayworks.droidweekly.repository.database.entity.Article
 import com.rayworks.droidweekly.utils.jsonToObject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -38,8 +36,8 @@ class ArticleRepository @Inject constructor(
             TIMEOUT_IN_SECOND.toLong(),
             TimeUnit.SECONDS
         )
-        .writeTimeout(10, TimeUnit.SECONDS)
-        .connectTimeout(10, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(30, TimeUnit.SECONDS)
         .addInterceptor(AgentInterceptor(DROID_WEEKLY))
         .build()
 
@@ -101,8 +99,9 @@ class ArticleRepository @Inject constructor(
                     val list = gson.jsonToObject<List<OldItemRef>>(refItemStr)
                     if (!list.isNullOrEmpty()) {
                         Timber.i(">>> cached ref items found with size : %d", list.size)
-                        GlobalScope.launch {
-                            withContext(Dispatchers.Main) { _refList.value = list }
+
+                        withContext(Dispatchers.Main) {
+                            _refList.value = list
                         }
                     }
                 }
@@ -144,8 +143,8 @@ class ArticleRepository @Inject constructor(
                 preferences.putInt(LATEST_ISSUE_ID, latestId)
                 preferences.putString(REFERENCE_ISSUES_ID, gson.toJson(itemRefs))
 
-                GlobalScope.launch {
-                    withContext(Dispatchers.Main) { refList.value = itemRefs }
+                withContext(Dispatchers.Main) {
+                    refList.value = itemRefs
                 }
 
                 val articles: List<Article> = articleDao.getArticlesByIssue(latestId)

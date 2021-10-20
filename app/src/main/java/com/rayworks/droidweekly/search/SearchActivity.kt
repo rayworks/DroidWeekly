@@ -13,22 +13,23 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rayworks.droidweekly.R
-import com.rayworks.droidweekly.utils.RxSearchObservable
 import com.rayworks.droidweekly.databinding.ActivitySearchBinding
-import com.rayworks.droidweekly.utils.scoped
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.ArticleManager
 import com.rayworks.droidweekly.repository.ArticleManager.ArticleDataListener
 import com.rayworks.droidweekly.ui.component.ArticleAdapter
+import com.rayworks.droidweekly.utils.RxSearchObservable
+import com.rayworks.droidweekly.utils.scoped
+import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
-import io.reactivex.disposables.Disposable
+import timber.log.Timber
 import java.lang.ref.WeakReference
 import java.util.Collections
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 
 /***
  * The page shows the search result based on cached historical articles
@@ -39,7 +40,8 @@ class SearchActivity : AppCompatActivity(), ArticleDataListener {
     private lateinit var articleAdapter: ArticleAdapter
     private lateinit var binding: ActivitySearchBinding
     private var searchView: SearchView? = null
-    private var disposable: Disposable? = null
+
+    private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     @Inject
     lateinit var articleManager: ArticleManager
@@ -97,21 +99,25 @@ class SearchActivity : AppCompatActivity(), ArticleDataListener {
     }
 
     private fun setupSearchAction() {
-        disposable = RxSearchObservable.fromView(searchView)
-                .debounce(300, TimeUnit.MILLISECONDS)
-                .filter { s: String ->
-                    val isEmpty = s.isEmpty()
-                    if (isEmpty) {
-                        resetResult()
-                    }
-                    !isEmpty
+        RxSearchObservable.fromView(searchView)
+            .debounce(300, TimeUnit.MILLISECONDS)
+            .filter { s: String ->
+                val isEmpty = s.isEmpty()
+                if (isEmpty) {
+                    resetResult()
                 }
-                .distinctUntilChanged()
-                .switchMap { s -> // already an async operation
-                    presenter.search(s, articleListener)
-                    Observable.just(s)
-                }
-                .subscribe { s -> println("Searching for key : $s") }
+                !isEmpty
+            }
+            .distinctUntilChanged()
+            .switchMap { s -> // already an async operation
+                presenter.search(s, articleListener)
+                Observable.just(s)
+            }.doOnDispose {
+                Timber.w(">>> Disposing the search observable")
+                presenter.dispose()
+            }
+            .autoDispose(scopeProvider)
+            .subscribe { s -> println("Searching for key : $s") }
     }
 
     private fun resetResult() {
@@ -153,15 +159,6 @@ class SearchActivity : AppCompatActivity(), ArticleDataListener {
 
     override fun onComplete(items: List<ArticleItem>) {
         articleAdapter.update(items)
-    }
-
-    override fun onDestroy() {
-        if (disposable != null) {
-            presenter.dispose()
-
-            disposable!!.dispose()
-        }
-        super.onDestroy()
     }
 
     companion object {

@@ -111,6 +111,9 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:$rxjava_version"
     implementation "io.reactivex.rxjava2:rxandroid:$rxjava_android_version"
 
+    api "com.uber.autodispose:autodispose-android:$autodispose_version"
+    api "com.uber.autodispose:autodispose-android-archcomponents:$autodispose_version"
+
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
 
     implementation "com.github.bumptech.glide:glide:$glide_version"

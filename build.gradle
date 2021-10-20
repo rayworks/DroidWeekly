@@ -11,6 +11,7 @@ buildscript {
         jsoup_version = '1.11.3'
         rxjava_version = '2.2.19'
         rxjava_android_version = '2.1.1'
+        autodispose_version = '1.4.0'
         okhttp_version = '4.8.1'
         kt_coroutines = '1.4.2'
 

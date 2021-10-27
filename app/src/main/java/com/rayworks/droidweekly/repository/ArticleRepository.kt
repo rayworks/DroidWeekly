@@ -76,6 +76,21 @@ class ArticleRepository @Inject constructor(
         load(SITE_URL + urlSubPath, id)
     }
 
+    override suspend fun loadLocalArticlesBy(keyword: String): List<ArticleItem> {
+        val result = withContext(Dispatchers.IO) {
+            Timber.d(">>> loading local articles : ${Thread.currentThread().name}")
+            articleDao.getArticleByKeyword("%${keyword}%").flatMap { article ->
+                val articleItem = ArticleItem(
+                    article.title, article.description, article.linkage)
+                articleItem.imgFrameColor = article.imgFrameColor
+                articleItem.imageUrl = article.imageUrl
+
+                listOf(articleItem)
+            }
+        }
+        return result
+    }
+
     private suspend fun updateList(list: List<ArticleItem>) {
         withContext(Dispatchers.Main) {
             articleList.value = list

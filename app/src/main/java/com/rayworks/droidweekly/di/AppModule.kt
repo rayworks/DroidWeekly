@@ -2,7 +2,6 @@ package com.rayworks.droidweekly.di
 
 import android.content.Context
 import androidx.room.Room
-import com.rayworks.droidweekly.repository.ArticleManager
 import com.rayworks.droidweekly.repository.WebContentParser
 import com.rayworks.droidweekly.repository.database.ArticleDao
 import com.rayworks.droidweekly.repository.database.DATABASE_NAME
@@ -42,15 +41,6 @@ object AppModule {
     @Provides
     fun provideArticleDao(issueDatabase: IssueDatabase): ArticleDao {
         return issueDatabase.articleDao()
-    }
-
-    /***
-     * Provides a singleton [ArticleManager] instance
-     */
-    @Singleton
-    @Provides
-    fun provideArticleManager(articleDao: ArticleDao): ArticleManager {
-        return ArticleManager(articleDao)
     }
 
     /***

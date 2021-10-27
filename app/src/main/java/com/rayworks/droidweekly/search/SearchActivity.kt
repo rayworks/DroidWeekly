@@ -6,68 +6,41 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rayworks.droidweekly.R
 import com.rayworks.droidweekly.databinding.ActivitySearchBinding
-import com.rayworks.droidweekly.model.ArticleItem
-import com.rayworks.droidweekly.model.OldItemRef
-import com.rayworks.droidweekly.repository.ArticleManager
-import com.rayworks.droidweekly.repository.ArticleManager.ArticleDataListener
 import com.rayworks.droidweekly.ui.component.ArticleAdapter
 import com.rayworks.droidweekly.utils.RxSearchObservable
-import com.rayworks.droidweekly.utils.scoped
+import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
+import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.lang.ref.WeakReference
 import java.util.Collections
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
+import kotlin.collections.ArrayList
 
 /***
  * The page shows the search result based on cached historical articles
  */
 @AndroidEntryPoint
-class SearchActivity : AppCompatActivity(), ArticleDataListener {
+class SearchActivity : AppCompatActivity()/*, ArticleDataListener*/ {
     private lateinit var recyclerView: RecyclerView
     private lateinit var articleAdapter: ArticleAdapter
     private lateinit var binding: ActivitySearchBinding
     private var searchView: SearchView? = null
 
+    val viewModel: ArticleListViewModel by viewModels()
+
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
-
-    @Inject
-    lateinit var articleManager: ArticleManager
-
-    /***
-     *  A presenter handles the searching by keywords.
-     */
-    class SearchPresenter(val articleManager: ArticleManager) {
-
-        /***
-         * Search specified keywords
-         */
-        fun search(s: String, articleListener: WeakReference<ArticleDataListener>) {
-
-            articleManager.search(s, articleListener)
-        }
-
-        /***
-         * Dispose the unused resources
-         */
-        fun dispose() {
-            articleManager.dispose()
-        }
-    }
-
-    private val presenter by scoped { SearchPresenter(articleManager) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,11 +83,14 @@ class SearchActivity : AppCompatActivity(), ArticleDataListener {
             }
             .distinctUntilChanged()
             .switchMap { s -> // already an async operation
-                presenter.search(s, articleListener)
+                lifecycleScope.launch() {
+                    val searchArticles = viewModel.searchArticles(s)
+                    articleAdapter.update(searchArticles)
+                }
+
                 Observable.just(s)
             }.doOnDispose {
                 Timber.w(">>> Disposing the search observable")
-                presenter.dispose()
             }
             .autoDispose(scopeProvider)
             .subscribe { s -> println("Searching for key : $s") }
@@ -127,8 +103,6 @@ class SearchActivity : AppCompatActivity(), ArticleDataListener {
             }
         }
     }
-
-    private var articleListener: WeakReference<ArticleDataListener> = WeakReference(this@SearchActivity)
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_search, menu)
@@ -147,18 +121,6 @@ class SearchActivity : AppCompatActivity(), ArticleDataListener {
             return true
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun onLoadError(err: String) {
-        Toast.makeText(this, "Error: $err", Toast.LENGTH_SHORT).show()
-    }
-
-    override fun onOldRefItemsLoaded(itemRefs: List<OldItemRef>) {
-        /** None logic *  */
-    }
-
-    override fun onComplete(items: List<ArticleItem>) {
-        articleAdapter.update(items)
     }
 
     companion object {

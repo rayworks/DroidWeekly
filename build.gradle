@@ -6,17 +6,17 @@ buildscript {
         android_gradle_version = '3.6.2'
 
         room_version = '2.2.5'
-        lifecycle_version = '2.3.0'
+        lifecycle_version = '2.3.1'
         glide_version = '4.12.0'
-        jsoup_version = '1.11.3'
-        rxjava_version = '2.2.19'
+        jsoup_version = '1.14.2'
+        rxjava_version = '2.2.21'
         rxjava_android_version = '2.1.1'
         autodispose_version = '1.4.0'
         okhttp_version = '4.8.1'
         kt_coroutines = '1.4.2'
 
         junit5Version = '1.5.0.0'
-        spek_version = '2.0.9'
+        spek_version = '2.0.17'
 
         hilt_version = '2.31.2-alpha'
         hilt_androidx_version = '1.0.0-alpha03'
@@ -24,7 +24,6 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
         maven { url "https://jitpack.io" }
     }
     dependencies {
@@ -48,7 +47,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        jcenter()
         maven { url "https://jitpack.io" }
     }
 }

@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_24dp)
         setupNavigationDrawer()
         val fab = findViewById<FloatingActionButton>(R.id.fab)
-        fab.setOnClickListener { view: View? -> launch(this@MainActivity) }
+        fab.setOnClickListener { launch(this@MainActivity) }
         setupArticleList()
         setupViewModel()
         val lastSelected = viewModel.selectedItemId
@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
         headerView = LayoutInflater.from(this)
             .inflate(R.layout.view_layout_nav_header, navigationView, false)
         avatarImageView = headerView.findViewById(R.id.avatar)
-        avatarImageView?.setOnClickListener { v: View? -> promptPickingImage() }
+        avatarImageView?.setOnClickListener { promptPickingImage() }
         val localAvatar = App.get().localAvatar
         if (!TextUtils.isEmpty(localAvatar)) {
             loadAvatarIfAny(Uri.parse(localAvatar), avatarImageView)

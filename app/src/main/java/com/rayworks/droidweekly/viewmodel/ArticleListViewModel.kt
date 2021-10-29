@@ -5,8 +5,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rayworks.droidweekly.model.ArticleItem
-import com.rayworks.droidweekly.model.OldItemRef
-import com.rayworks.droidweekly.repository.ArticleManager.ArticleDataListener
 import com.rayworks.droidweekly.repository.IArticleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -16,11 +14,10 @@ import javax.inject.Inject
 
 /** * The ViewModel for a list of articles.  */
 @HiltViewModel
-class ArticleListViewModel @Inject constructor (
+class ArticleListViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val manager: IArticleRepository
-) : ViewModel(),
-        ArticleDataListener {
+    private val repository: IArticleRepository,
+) : ViewModel() {
 
     val keyMenuId = "menu_item_id"
 
@@ -30,9 +27,9 @@ class ArticleListViewModel @Inject constructor (
     // TODO: binding not working ?!
     // var articles: ObservableField<List<ArticleItem>> = ObservableField()
 
-    var articleItems = manager.articleList
+    var articleItems = repository.articleList
 
-    val itemRefs = manager.refList
+    val itemRefs = repository.refList
 
     @JvmField
     val articleLoaded = ObservableBoolean(true)
@@ -69,7 +66,7 @@ class ArticleListViewModel @Inject constructor (
         dataLoading.set(true)
         viewModelScope.launch {
             try {
-                manager.loadData()
+                repository.loadData()
                 dataLoading.set(false)
             } catch (ex: IOException) {
                 onLoadError(ex.message!!)
@@ -85,7 +82,7 @@ class ArticleListViewModel @Inject constructor (
 
         viewModelScope.launch {
             try {
-                manager.loadData(issueId)
+                repository.loadData(issueId)
 
                 dataLoading.set(false)
             } catch (ex: IOException) {
@@ -94,23 +91,18 @@ class ArticleListViewModel @Inject constructor (
         }
     }
 
-    override fun onLoadError(err: String) {
+    private fun onLoadError(err: String) {
         println(err)
         dataLoading.set(false)
         articleLoaded.set(false)
     }
 
-    override fun onOldRefItemsLoaded(itemRefs: List<OldItemRef>) {
-        // this.itemRefs.set(itemRefs)
-    }
-
-    override fun onComplete(items: List<ArticleItem>) {
-        dataLoading.set(false)
-        // articles.value = (items)
-    }
-
     override fun onCleared() {
         // manager.setDataListener(null)
         super.onCleared()
+    }
+
+    suspend fun searchArticles(keyword: String): List<ArticleItem> {
+        return repository.loadLocalArticlesBy(keyword)
     }
 }

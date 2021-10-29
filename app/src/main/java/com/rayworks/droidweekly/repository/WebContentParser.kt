@@ -89,7 +89,7 @@ class WebContentParser {
 
     private fun parseSections(issue: Element): List<ArticleItem> {
         val sections = issue.getElementsByClass(SECTIONS)
-        if (sections != null && !sections.isEmpty()) {
+        if (!sections.isEmpty()) {
             val tables =
                     sections[0].getElementsByTag(TABLE)
             debugPrint(">>> table size: " + tables.size)

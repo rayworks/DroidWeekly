@@ -24,4 +24,9 @@ interface IArticleRepository {
      * Loads article content with a known path
      */
     suspend fun loadData(urlSubPath: String)
+
+    /***
+     * Searches and loads the articles matched with the keyword
+     */
+    suspend fun loadLocalArticlesBy(keyword: String) : List<ArticleItem>
 }

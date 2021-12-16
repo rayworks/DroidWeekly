@@ -74,6 +74,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         val actionbar = supportActionBar
@@ -82,6 +83,7 @@ class MainActivity : AppCompatActivity() {
         setupNavigationDrawer()
         val fab = findViewById<FloatingActionButton>(R.id.fab)
         fab.setOnClickListener { launch(this@MainActivity) }
+
         setupArticleList()
         setupViewModel()
         val lastSelected = viewModel.selectedItemId

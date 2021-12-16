@@ -1,14 +1,13 @@
 package com.rayworks.droidweekly.ui.component;
 
 import android.content.Context;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.rayworks.droidweekly.R;
 import com.rayworks.droidweekly.dashboard.interfaces.OnViewArticleListener;
@@ -16,23 +15,17 @@ import com.rayworks.droidweekly.model.ArticleItem;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import io.reactivex.Observable;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
 
 public class ArticleAdapter extends RecyclerView.Adapter<MyViewHolder> {
     private List<ArticleItem> articleItems = new ArrayList<>();
     private Context context;
     private OnViewArticleListener viewArticleListener;
 
-    private final CompositeDisposable compositeDisposable;
-
     public ArticleAdapter(Context context, List<ArticleItem> items) {
         this.context = context;
         this.articleItems.addAll(items);
-
-        compositeDisposable = new CompositeDisposable();
     }
 
     public ArticleAdapter setViewArticleListener(OnViewArticleListener viewArticleListener) {
@@ -43,27 +36,12 @@ public class ArticleAdapter extends RecyclerView.Adapter<MyViewHolder> {
     public void update(List<ArticleItem> itemList) {
         if (itemList == null) return;
 
-        final int preSize = articleItems.size();
-        if (preSize > 0) {
-            articleItems.clear();
-        }
+        articleItems = itemList.stream()
+                .filter(it -> !TextUtils.isEmpty(it.getTitle()))
+                .collect(Collectors.toList());
 
-        Disposable disposable =
-                Observable.fromIterable(itemList)
-                        .filter(item -> !TextUtils.isEmpty(item.getTitle()))
-                        .subscribe(
-                                item -> articleItems.add(item),
-                                Throwable::printStackTrace,
-                                () -> {
-                                    if (preSize == 0) {
-                                        notifyItemRangeInserted(0, articleItems.size());
-                                    } else {
-                                        // as data updated
-                                        notifyDataSetChanged();
-                                    }
-                                });
-
-        compositeDisposable.add(disposable);
+        // as data updated
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -94,12 +72,4 @@ public class ArticleAdapter extends RecyclerView.Adapter<MyViewHolder> {
         return articleItems.size();
     }
 
-    @Override
-    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView);
-
-        if (!compositeDisposable.isDisposed()) {
-            compositeDisposable.dispose();
-        }
-    }
 }

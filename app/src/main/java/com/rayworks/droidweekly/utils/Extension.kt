@@ -1,13 +1,16 @@
 package com.rayworks.droidweekly.utils
 
-import androidx.lifecycle.get
+import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.get
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /***
  * Convert JSON string to specified data object
@@ -58,8 +61,8 @@ class ScopeViewModel<V>(
     class Factory<V>(val valueFactory: () -> V) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-                ScopeViewModel(valueFactory()) as? T
-                        ?: throw java.lang.IllegalArgumentException("Unknown type")
+            ScopeViewModel(valueFactory()) as? T
+                ?: throw java.lang.IllegalArgumentException("Unknown type")
     }
 }
 
@@ -94,4 +97,28 @@ class LazyScopedValue<T>(
     companion object {
         private val NotSet = Any()
     }
+}
+
+/***
+ * Extension method of [SearchView] to get the query text flow
+ */
+fun SearchView.queryTextFlow(): StateFlow<String> {
+    val query = MutableStateFlow("")
+    setOnQueryTextListener(
+        object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                newText?.let {
+                    query.value = newText
+
+                }
+                return true
+            }
+        }
+    )
+
+    return query
 }

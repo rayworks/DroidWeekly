@@ -16,31 +16,29 @@ import androidx.recyclerview.widget.RecyclerView
 import com.rayworks.droidweekly.R
 import com.rayworks.droidweekly.databinding.ActivitySearchBinding
 import com.rayworks.droidweekly.ui.component.ArticleAdapter
-import com.rayworks.droidweekly.utils.RxSearchObservable
+import com.rayworks.droidweekly.utils.queryTextFlow
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import io.reactivex.Observable
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.util.Collections
-import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 
 /***
  * The page shows the search result based on cached historical articles
  */
+@FlowPreview
 @AndroidEntryPoint
-class SearchActivity : AppCompatActivity()/*, ArticleDataListener*/ {
+class SearchActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var articleAdapter: ArticleAdapter
     private lateinit var binding: ActivitySearchBinding
-    private var searchView: SearchView? = null
+    private lateinit var searchView: SearchView
 
     val viewModel: ArticleListViewModel by viewModels()
-
-    private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,9 +69,9 @@ class SearchActivity : AppCompatActivity()/*, ArticleDataListener*/ {
         }
     }
 
-    private fun setupSearchAction() {
-        RxSearchObservable.fromView(searchView)
-            .debounce(300, TimeUnit.MILLISECONDS)
+    private suspend fun setupSearchAction() {
+        searchView.queryTextFlow()
+            .debounce(300)
             .filter { s: String ->
                 val isEmpty = s.isEmpty()
                 if (isEmpty) {
@@ -82,18 +80,10 @@ class SearchActivity : AppCompatActivity()/*, ArticleDataListener*/ {
                 !isEmpty
             }
             .distinctUntilChanged()
-            .switchMap { s -> // already an async operation
-                lifecycleScope.launch() {
-                    val searchArticles = viewModel.searchArticles(s)
-                    articleAdapter.update(searchArticles)
-                }
-
-                Observable.just(s)
-            }.doOnDispose {
-                Timber.w(">>> Disposing the search observable")
+            .collect {
+                val searchArticles = viewModel.searchArticles(it)
+                articleAdapter.update(searchArticles)
             }
-            .autoDispose(scopeProvider)
-            .subscribe { s -> println("Searching for key : $s") }
     }
 
     private fun resetResult() {
@@ -108,10 +98,13 @@ class SearchActivity : AppCompatActivity()/*, ArticleDataListener*/ {
         menuInflater.inflate(R.menu.menu_search, menu)
         val item = menu.findItem(R.id.action_search)
         searchView = item.actionView as SearchView
-        setupSearchAction()
+
+        lifecycleScope.launch {
+            setupSearchAction()
+        }
 
         // expands the SearchView automatically
-        searchView!!.isIconified = false
+        searchView.isIconified = false
         return true
     }
 

@@ -31,6 +31,9 @@ class WebContentParser {
         }
     }
 
+    /***
+     * Parses the article items and related references
+     */
     fun parse(data: String): Pair<List<ArticleItem>, List<OldItemRef>> {
         val doc = Jsoup.parse(data)
         val itemRefs: MutableList<OldItemRef> = LinkedList()
@@ -55,25 +58,25 @@ class WebContentParser {
             }
         }
         val latestIssues =
-                doc.getElementsByClass(LATEST_ISSUE)
+            doc.getElementsByClass(LATEST_ISSUE)
         val currentIssues = doc.getElementsByClass("issue")
         if (!latestIssues.isEmpty()) { // the latest issue content
             val issue = latestIssues[0]
             var latestId = 0
             val headers =
-                    issue.getElementsByClass(ISSUE_HEADER)
+                issue.getElementsByClass(ISSUE_HEADER)
             if (!headers.isEmpty()) {
                 val header = headers[0]
                 // #308
                 val latestIssueId = header.getElementsByClass("clearfix")[0]
-                        .getElementsByTag("span")
-                        .text()
+                    .getElementsByTag("span")
+                    .text()
                 if (latestIssueId.startsWith("#")) {
                     latestId = latestIssueId.substring(1).toInt()
                 }
                 // build the issue menu items
                 itemRefs.add(
-                        0, OldItemRef("Issue $latestIssueId", "/issues/issue-$latestId", latestId)
+                    0, OldItemRef("Issue $latestIssueId", "/issues/issue-$latestId", latestId)
                 )
             }
 
@@ -90,10 +93,11 @@ class WebContentParser {
     private fun parseSections(issue: Element): List<ArticleItem> {
         val sections = issue.getElementsByClass(SECTIONS)
         if (!sections.isEmpty()) {
-            val tables =
-                    sections[0].getElementsByTag(TABLE)
+            val newEntries = sections[0].getElementsByClass("text-container galileo-ap-content-editor")
+            val tables = if (newEntries.isEmpty()) sections[0].getElementsByTag(TABLE) else newEntries
+
             debugPrint(">>> table size: " + tables.size)
-            return parseArticleItems(tables)
+            return parseArticleItems(sections[0], tables, newEntries.isNotEmpty())
         } else {
             throw WebContentParsingException("Parsing failure: sections not found")
         }
@@ -101,13 +105,80 @@ class WebContentParser {
 
     private fun parseArticleItemsForIssue(doc: Document): List<ArticleItem> {
         val issues = doc.getElementsByClass("issue")
-        val tables = issues[0].getElementsByTag("table")
-        return parseArticleItems(tables)
+        val newEntries = issues[0].getElementsByClass("text-container galileo-ap-content-editor")
+        val tables = if (newEntries.isEmpty()) issues[0].getElementsByTag(TABLE) else newEntries
+
+        return parseArticleItems(issues[0], tables, newEntries.isNotEmpty())
     }
 
-    private fun parseArticleItems(tables: Elements): List<ArticleItem> {
-        val articleItems: MutableList<ArticleItem> =
-                LinkedList()
+    private fun parseArticleItems(section: Element, tables: Elements, newEntryStyle: Boolean): List<ArticleItem> {
+        val articleItems: MutableList<ArticleItem> = LinkedList()
+
+        if (newEntryStyle) {
+            val map = mutableMapOf<String, String>()
+            val mediaSrcList = section.getElementsByClass("publish-container")
+            for (e in mediaSrcList) {
+                val href = e.getElementsByTag("a")[0]
+                if (!href.attr("href").isNullOrEmpty()) {
+                    val imgs = href.getElementsByTag("img")
+                    if (imgs.isNotEmpty()) {
+                        val imageUrl = imgs[0].attr("src")
+                        if (imageUrl.isNotEmpty()) {
+                            map[href.attr("href")] = imageUrl
+                        }
+                    }
+                }
+            }
+            parseArticles(tables, articleItems, map)
+        } else
+            parseLegacyArticles(tables, articleItems)
+
+        return articleItems
+    }
+
+    private fun parseArticles(
+        tables: Elements,
+        articleItems: MutableList<ArticleItem>,
+        map: MutableMap<String, String>
+    ) {
+        for (elem in tables) {
+            val articleItem = ArticleItem()
+
+            val nodes = elem.child(0).children()
+            if (nodes.size == 2) {
+                val href = nodes[0].getElementsByTag("a")[0]
+                articleItem.linkage = href.attr("href")
+                articleItem.title = href.text()
+                if (map.containsKey(articleItem.linkage)) {
+                    articleItem.imageUrl = map[articleItem.linkage]
+                }
+
+                val style = href.attr("style")
+                val startPos = style.indexOf('#', 0)
+                val endPos = style.indexOf(";", startPos)
+                if (startPos >= 0 && endPos >= 0) {
+                    articleItem.imgFrameColor =
+                        parseColor(style.substring(startPos, endPos))
+                }
+
+                articleItem.description = nodes[1].text()
+
+                articleItems.add(articleItem)
+            } else if (nodes.size == 1) {
+                nodes[0].getElementsByTag("span").let {
+                    if (it.size > 0) {
+                        articleItem.title = it[0].text()
+                        articleItems.add(articleItem)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun parseLegacyArticles(
+        tables: Elements,
+        articleItems: MutableList<ArticleItem>
+    ) {
         for (i in tables.indices) {
             val articleItem = ArticleItem()
             val element = tables[i]
@@ -123,13 +194,13 @@ class WebContentParser {
                         val endPos = style.indexOf(";", startPos)
                         if (startPos >= 0 && endPos >= 0) {
                             articleItem.imgFrameColor =
-                                    parseColor(style.substring(startPos, endPos))
+                                parseColor(style.substring(startPos, endPos))
                         }
                     }
                 }
             }
             val elementsByClass =
-                    element.getElementsByClass("article-headline")
+                element.getElementsByClass("article-headline")
             if (!elementsByClass.isEmpty()) {
                 val headline = elementsByClass[0]
                 if (headline != null) {
@@ -160,6 +231,5 @@ class WebContentParser {
             }
             articleItems.add(articleItem)
         }
-        return articleItems
     }
 }

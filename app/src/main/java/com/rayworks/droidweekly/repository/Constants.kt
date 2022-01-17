@@ -8,7 +8,7 @@ const val SECTIONS = "sections"
 const val TABLE = "table"
 
 const val LATEST_ISSUE_ID = "latest_issue_id"
-const val SITE_URL = "http://androidweekly.net" // /issues/issue-302
+const val SITE_URL = "https://androidweekly.net" // /issues/issue-302
 
 const val REFERENCE_ISSUES_ID = "reference_issues_id"
 

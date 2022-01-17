@@ -25,7 +25,7 @@ object HtmlParsingSpec : Spek({
             assertTrue("First issue should have valid issue path") {
                 refs.first().relativePath.startsWith(prefix)
             }
-            assertTrue("Last visible issue should have valid issue patqh") {
+            assertTrue("Last visible issue should have valid issue path") {
                 refs.last().relativePath.startsWith(prefix)
             }
         }
@@ -42,6 +42,28 @@ object HtmlParsingSpec : Spek({
 
             assertTrue(pair.first.isNotEmpty())
             assertEquals("Articles & Tutorials", pair.first[0].title)
+        }
+    }
+
+    describe("Latest web content parsing") {
+
+        it("The latest Html content should be parsed successfully") {
+            val content = ClassLoader.getSystemResource("weekly501.html").readText()
+            val pair = parser.parse(content)
+
+            val refs = pair.second
+            assertTrue(refs.isNotEmpty())
+            assertEquals(501, refs[0].issueId)
+
+            assertTrue(pair.first.isNotEmpty())
+
+            val prefix = "/issues/issue-"
+            assertTrue("First issue should have valid issue path") {
+                refs.first().relativePath.startsWith(prefix)
+            }
+            assertTrue("Last visible issue should have valid issue path") {
+                refs.last().relativePath.startsWith(prefix)
+            }
         }
     }
 })

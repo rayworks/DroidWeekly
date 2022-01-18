@@ -28,5 +28,5 @@ interface IArticleRepository {
     /***
      * Searches and loads the articles matched with the keyword
      */
-    suspend fun loadLocalArticlesBy(keyword: String) : List<ArticleItem>
+    suspend fun loadLocalArticlesBy(keyword: String): List<ArticleItem>
 }

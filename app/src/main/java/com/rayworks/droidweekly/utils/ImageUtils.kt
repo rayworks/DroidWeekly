@@ -23,12 +23,16 @@ const val ONE_MEGA_BYTES = 1024 * 1024
  */
 fun Activity.cropImage(imageUri: Uri) {
     val selectedBitmap: Bitmap? = getBitmap(this, imageUri)
-    val selectedImgFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-            getTimestamp().toString() + "_selectedImg.jpg")
+    val selectedImgFile = File(
+        getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+        getTimestamp().toString() + "_selectedImg.jpg"
+    )
     convertBitmapToFile(selectedImgFile, selectedBitmap!!)
 
-    val croppedImgFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-            getTimestamp().toString() + "_croppedImg.jpg")
+    val croppedImgFile = File(
+        getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+        getTimestamp().toString() + "_croppedImg.jpg"
+    )
     startCrop(this, Uri.fromFile(selectedImgFile), Uri.fromFile(croppedImgFile))
 }
 
@@ -51,9 +55,9 @@ private fun startCrop(context: Activity, sourceUri: Uri, destinationUri: Uri) {
     }
 
     UCrop.of(sourceUri, destinationUri)
-            .withAspectRatio(1f, 1f)
-            .withOptions(options)
-            .start(context)
+        .withAspectRatio(1f, 1f)
+        .withOptions(options)
+        .start(context)
 }
 
 fun convertBitmapToFile(destinationFile: File, bitmap: Bitmap) {
@@ -74,9 +78,11 @@ fun convertBitmapToFile(destinationFile: File, bitmap: Bitmap) {
 fun getBitmap(context: Context, imageUri: Uri): Bitmap? {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         return ImageDecoder.decodeBitmap(
-                ImageDecoder.createSource(
-                        context.contentResolver,
-                        imageUri))
+            ImageDecoder.createSource(
+                context.contentResolver,
+                imageUri
+            )
+        )
     } else {
         context.contentResolver.openInputStream(imageUri)?.let {
             return BitmapFactory.decodeStream(it)

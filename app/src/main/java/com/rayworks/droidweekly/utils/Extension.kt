@@ -113,7 +113,6 @@ fun SearchView.queryTextFlow(): StateFlow<String> {
             override fun onQueryTextChange(newText: String?): Boolean {
                 newText?.let {
                     query.value = newText
-
                 }
                 return true
             }

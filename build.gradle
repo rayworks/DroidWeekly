@@ -12,7 +12,7 @@ buildscript {
         rxjava_version = '2.2.21'
         rxjava_android_version = '2.1.1'
         autodispose_version = '1.4.0'
-        okhttp_version = '4.8.1'
+        okhttp_version = '4.9.3'
         kt_coroutines = '1.4.2'
 
         junit5Version = '1.5.0.0'
@@ -54,7 +54,7 @@ allprojects {
 subprojects {
     apply plugin: "com.diffplug.gradle.spotless"
 
-    def ktlintVer = "0.36.0"
+    def ktlintVer = "0.43.2"
     def map = new HashMap<String, String>()
     map.put("max_line_length", "120")
     map.put("disabled_rules", "import-ordering")

@@ -4,34 +4,12 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 
-// Required as JUnit 5 doesn't support android modules out of the box.
-apply plugin: "de.mannodermaus.android-junit5"
-
 android {
     compileSdkVersion 29
 
     // Add Kotlin source directory to all source sets
     sourceSets.each {
         it.java.srcDirs += "src/$it.name/kotlin"
-    }
-
-    testOptions {
-        junitPlatform {
-            filters {
-                engines {
-                    include 'spek2'
-                }
-            }
-            jacocoOptions {
-                // here goes all jacoco config, for example
-                html.enabled = true
-                xml.enabled = false
-                csv.enabled = false
-            }
-        }
-        unitTests.all(({
-            testLogging.events = ["passed", "skipped", "failed"]
-        } as Closure<Test>))
     }
 
     defaultConfig {
@@ -41,7 +19,6 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArgument "runnerBuilder", "de.mannodermaus.junit5.AndroidJUnit5Builder"
     }
     buildTypes {
         release {

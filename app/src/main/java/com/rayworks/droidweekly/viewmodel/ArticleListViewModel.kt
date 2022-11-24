@@ -7,16 +7,16 @@ import androidx.lifecycle.viewModelScope
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.repository.IArticleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 /** * The ViewModel for a list of articles.  */
 @HiltViewModel
 class ArticleListViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val repository: IArticleRepository,
+    private val repository: IArticleRepository
 ) : ViewModel() {
 
     val keyMenuId = "menu_item_id"

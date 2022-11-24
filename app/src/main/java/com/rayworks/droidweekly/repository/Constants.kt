@@ -1,4 +1,5 @@
 @file:JvmName("Constants")
+
 package com.rayworks.droidweekly.repository
 
 const val PAST_ISSUES = "past-issues"

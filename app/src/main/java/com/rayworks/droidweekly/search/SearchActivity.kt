@@ -19,13 +19,13 @@ import com.rayworks.droidweekly.ui.component.ArticleAdapter
 import com.rayworks.droidweekly.utils.queryTextFlow
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Collections
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
-import java.util.Collections
 
 /***
  * The page shows the search result based on cached historical articles

@@ -8,15 +8,15 @@ import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.database.ArticleDao
 import com.rayworks.droidweekly.repository.database.entity.Article
 import com.rayworks.droidweekly.utils.jsonToObject
+import java.io.IOException
+import java.util.LinkedList
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import timber.log.Timber
-import java.io.IOException
-import java.util.LinkedList
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 /***
  * A repository as the data entry to load the article items.
@@ -81,7 +81,9 @@ class ArticleRepository @Inject constructor(
             Timber.d(">>> loading local articles : ${Thread.currentThread().name}")
             articleDao.getArticleByKeyword("%$keyword%").flatMap { article ->
                 val articleItem = ArticleItem(
-                    article.title, article.description, article.linkage
+                    article.title,
+                    article.description,
+                    article.linkage
                 )
                 articleItem.imgFrameColor = article.imgFrameColor
                 articleItem.imageUrl = article.imageUrl
@@ -135,7 +137,6 @@ class ArticleRepository @Inject constructor(
 
                 setDataLoaded(true)
             } catch (exp: IOException) {
-
                 setDataLoaded(false)
                 throw exp
             }
@@ -203,7 +204,9 @@ class ArticleRepository @Inject constructor(
         val items: MutableList<ArticleItem> = LinkedList()
         for (article in articles) {
             val articleItem = ArticleItem(
-                article.title, article.description, article.linkage
+                article.title,
+                article.description,
+                article.linkage
             )
             articleItem.imgFrameColor = article.imgFrameColor
             articleItem.imageUrl = article.imageUrl

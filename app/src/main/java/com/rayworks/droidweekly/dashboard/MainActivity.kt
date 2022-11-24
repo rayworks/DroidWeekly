@@ -44,8 +44,8 @@ import com.rayworks.droidweekly.utils.getCapturedImageOutputUri
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
-import timber.log.Timber
 import javax.inject.Inject
+import timber.log.Timber
 
 /***
  * The main dash board
@@ -145,7 +145,8 @@ class MainActivity : AppCompatActivity() {
                     != PackageManager.PERMISSION_GRANTED
                 ) {
                     ActivityCompat.requestPermissions(
-                        this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                        this,
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                         REQUEST_STORAGE_WRITE_ACCESS_PERMISSION
                     )
                 } else {
@@ -156,7 +157,8 @@ class MainActivity : AppCompatActivity() {
                     != PackageManager.PERMISSION_GRANTED
                 ) {
                     ActivityCompat.requestPermissions(
-                        this, arrayOf(Manifest.permission.CAMERA),
+                        this,
+                        arrayOf(Manifest.permission.CAMERA),
                         REQUEST_CAMERA_ACCESS_PERMISSION
                     )
                 } else {
@@ -186,6 +188,7 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(intent, REQUEST_CODE_PHONE_ALBUM)
     }
 
+    @Suppress("OverrideDeprecatedMigration")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode != RESULT_OK) {
@@ -211,7 +214,6 @@ class MainActivity : AppCompatActivity() {
                 data.data!!
             )
             REQUEST_CODE_PHONE_CAMERA -> {
-
                 // retrieve the persisted file
                 val capturedImageUri = getCapturedImageOutputUri(this, capturedImageName)
                 this.cropImage(capturedImageUri)
@@ -242,7 +244,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupViewModel() {
-
         val dataBinding = ActivityMainBinding.bind(findViewById(R.id.drawer_layout))
         dataBinding.viewmodel = viewModel
 
@@ -252,7 +253,6 @@ class MainActivity : AppCompatActivity() {
             object : OnPropertyChangedCallback() {
                 override fun onPropertyChanged(sender: Observable, propertyId: Int) {
                     if (!viewModel.articleLoaded.get()) {
-
                         // reset for next round
                         viewModel.articleLoaded.set(true)
                         val toast = Toast.makeText(
@@ -264,7 +264,8 @@ class MainActivity : AppCompatActivity() {
                         toast.show()
                     }
                 }
-            })
+            }
+        )
         viewModel.itemRefs.observe(this, { oldItemRefs: List<OldItemRef> ->
             val menu = navigationView.menu
             if (oldItemRefList != null && !oldItemRefList!!.isEmpty() &&

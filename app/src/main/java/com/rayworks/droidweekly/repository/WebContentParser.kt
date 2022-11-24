@@ -3,11 +3,11 @@ package com.rayworks.droidweekly.repository
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.exception.WebContentParsingException
+import java.util.LinkedList
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
-import java.util.LinkedList
 
 class WebContentParser {
     companion object {
@@ -76,7 +76,8 @@ class WebContentParser {
                 }
                 // build the issue menu items
                 itemRefs.add(
-                    0, OldItemRef("Issue $latestIssueId", "/issues/issue-$latestId", latestId)
+                    0,
+                    OldItemRef("Issue $latestIssueId", "/issues/issue-$latestId", latestId)
                 )
             }
 
@@ -130,8 +131,9 @@ class WebContentParser {
                 }
             }
             parseArticles(tables, articleItems, map)
-        } else
+        } else {
             parseLegacyArticles(tables, articleItems)
+        }
 
         return articleItems
     }

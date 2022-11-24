@@ -38,9 +38,9 @@ fun Activity.cropImage(imageUri: Uri) {
 
 fun getFileUri(context: Context, pkg: String, file: File): Uri {
     val auth = "$pkg.fileprovider"
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         FileProvider.getUriForFile(context, auth, file)
-    else Uri.fromFile(file)
+    } else Uri.fromFile(file)
 }
 
 fun getTimestamp(): Long {

@@ -2,8 +2,8 @@ package com.rayworks.droidweekly.viewmodel
 
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.rayworks.droidweekly.ui.component.ArticleAdapter
 import com.rayworks.droidweekly.model.ArticleItem
+import com.rayworks.droidweekly.ui.component.ArticleAdapter
 
 /***
  * The custom binding for updating the data of a [RecyclerView.Adapter].

@@ -1,11 +1,7 @@
 package com.rayworks.droidweekly.utils
 
 import androidx.appcompat.widget.SearchView
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.get
+import androidx.lifecycle.*
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -60,7 +56,7 @@ class ScopeViewModel<V>(
      */
     class Factory<V>(val valueFactory: () -> V) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T =
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
             ScopeViewModel(valueFactory()) as? T
                 ?: throw java.lang.IllegalArgumentException("Unknown type")
     }

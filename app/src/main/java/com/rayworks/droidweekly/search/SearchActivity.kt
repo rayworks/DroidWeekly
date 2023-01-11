@@ -9,7 +9,6 @@ import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,15 +16,9 @@ import com.rayworks.droidweekly.R
 import com.rayworks.droidweekly.databinding.ActivitySearchBinding
 import com.rayworks.droidweekly.ui.component.ArticleAdapter
 import com.rayworks.droidweekly.utils.queryTextFlow
-import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Collections
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.launch
+import java.util.*
 
 /***
  * The page shows the search result based on cached historical articles
@@ -38,7 +31,7 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySearchBinding
     private lateinit var searchView: SearchView
 
-    val viewModel: ArticleListViewModel by viewModels()
+    val viewModel: SearchViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,21 +63,11 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun setupSearchAction() {
-        searchView.queryTextFlow()
-            .debounce(300)
-            .filter { s: String ->
-                val isEmpty = s.isEmpty()
-                if (isEmpty) {
-                    resetResult()
-                }
-                !isEmpty
-            }
-            .distinctUntilChanged()
-            .collect {
-                val searchArticles = viewModel.searchArticles(it)
-                articleAdapter.update(searchArticles)
-            }
+    private fun setupSearchAction() {
+        viewModel.queryFlow = searchView.queryTextFlow()
+        viewModel.itemsLiveData.observe(this) {
+            articleAdapter.update(it)
+        }
     }
 
     private fun resetResult() {
@@ -100,9 +83,7 @@ class SearchActivity : AppCompatActivity() {
         val item = menu.findItem(R.id.action_search)
         searchView = item.actionView as SearchView
 
-        lifecycleScope.launch {
-            setupSearchAction()
-        }
+        setupSearchAction()
 
         // expands the SearchView automatically
         searchView.isIconified = false

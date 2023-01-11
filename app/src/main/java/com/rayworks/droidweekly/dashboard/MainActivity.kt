@@ -8,11 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.TextUtils
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -44,8 +40,8 @@ import com.rayworks.droidweekly.utils.getCapturedImageOutputUri
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import timber.log.Timber
+import javax.inject.Inject
 
 /***
  * The main dash board
@@ -98,7 +94,9 @@ class MainActivity : AppCompatActivity() {
         articleAdapter.setViewArticleListener { url: String? ->
             val intent = Intent(Intent.ACTION_VIEW)
             intent.data = Uri.parse(url)
-            startActivity(intent)
+           // startActivity(intent)
+
+            DetailActivity.start(this, url!!)
         }
         recyclerView.adapter = articleAdapter
         val layoutManager = LinearLayoutManager(this)

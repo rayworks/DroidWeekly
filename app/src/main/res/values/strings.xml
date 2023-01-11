@@ -8,4 +8,5 @@
 
     <string name="about">About</string>
     <string name="title_activity_search">SearchActivity</string>
+    <string name="title_activity_detail">DetailActivity</string>
 </resources>

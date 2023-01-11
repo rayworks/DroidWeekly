@@ -24,9 +24,6 @@ class ArticleListViewModel @Inject constructor(
     @JvmField
     val dataLoading = ObservableBoolean(false)
 
-    // TODO: binding not working ?!
-    // var articles: ObservableField<List<ArticleItem>> = ObservableField()
-
     var articleItems = repository.articleList
 
     val itemRefs = repository.refList
@@ -95,11 +92,6 @@ class ArticleListViewModel @Inject constructor(
         println(err)
         dataLoading.set(false)
         articleLoaded.set(false)
-    }
-
-    override fun onCleared() {
-        // manager.setDataListener(null)
-        super.onCleared()
     }
 
     suspend fun searchArticles(keyword: String): List<ArticleItem> {

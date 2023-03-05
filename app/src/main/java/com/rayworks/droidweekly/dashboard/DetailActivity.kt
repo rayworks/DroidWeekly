@@ -5,17 +5,25 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.http.SslError
 import android.os.Bundle
-import android.view.ViewGroup
 import android.webkit.*
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.rayworks.droidweekly.dashboard.ui.theme.DroidWeeklyTheme
 import kotlinx.coroutines.launch
@@ -58,28 +66,51 @@ fun MainContent(url: String, onClose: () -> Unit) {
 
 @Composable
 fun BodyContent(url: String, onClose: () -> Unit) {
-    var rememberWebViewProgress: Int by remember { mutableStateOf(-1) }
+    var rememberWebViewProgress: Float by remember { mutableStateOf(0f) }
 
-    Box() {
-        WebContent(modifier = Modifier.fillMaxSize(), url = url, onBack = { webView ->
-            if (webView?.canGoBack() == true) {
-                webView.goBack()
-            } else {
-                onClose.invoke()
-            }
-        }, initSettings = { settings ->
-            settings?.apply {
-                javaScriptEnabled = true
-                useWideViewPort = true
-                loadWithOverviewMode = true
-                setSupportZoom(true)
-                builtInZoomControls = true
-                displayZoomControls = true
-                javaScriptCanOpenWindowsAutomatically = true
-                cacheMode = WebSettings.LOAD_NO_CACHE
-            }
-        })
+    Column(
+        modifier = Modifier
+            .background(colorResource(android.R.color.white))
+            .fillMaxSize()
+    ) {
+        // web page loading progress
+        AnimatedVisibility(visible = (rememberWebViewProgress > 0f && rememberWebViewProgress < 1f)) {
+            LinearProgressIndicator(
+                progress = rememberWebViewProgress,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp),
+                color = Color.Cyan,
+                backgroundColor = colorResource(android.R.color.white)
+            )
+        }
 
+        WebContent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            url = url,
+            onProgressChange = { progress ->
+                rememberWebViewProgress = (progress / 100f).coerceIn(0f, 1f)
+            },
+            onBack = { webView ->
+                if (webView?.canGoBack() == true) {
+                    webView.goBack()
+                } else {
+                    onClose.invoke()
+                }
+            }, initSettings = { settings ->
+                settings?.apply {
+                    javaScriptEnabled = true
+                    useWideViewPort = true
+                    loadWithOverviewMode = true
+                    setSupportZoom(true)
+                    builtInZoomControls = true
+                    displayZoomControls = true
+                    javaScriptCanOpenWindowsAutomatically = true
+                    cacheMode = WebSettings.LOAD_NO_CACHE
+                }
+            })
     }
 }
 
@@ -88,13 +119,14 @@ fun BodyContent(url: String, onClose: () -> Unit) {
 fun WebContent(
     modifier: Modifier = Modifier,
     url: String,
+    onProgressChange: (progress: Int) -> Unit = {},
     onBack: (webView: WebView?) -> Unit,
     initSettings: (webSettings: WebSettings?) -> Unit = {}
 ) {
 
     val chromeClient = object : WebChromeClient() {
         override fun onProgressChanged(view: WebView?, newProgress: Int) {
-            //onProgressChange(newProgress)
+            onProgressChange(newProgress)
             super.onProgressChanged(view, newProgress)
         }
     }
@@ -102,10 +134,12 @@ fun WebContent(
     val client = object : WebViewClient() {
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
+            onProgressChange.invoke(0)
         }
 
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
+            onProgressChange.invoke(100)
         }
 
         override fun shouldOverrideUrlLoading(
@@ -136,10 +170,6 @@ fun WebContent(
     var webView: WebView? = null
     AndroidView(modifier = modifier, factory = {
         WebView(it).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
             this.webChromeClient = chromeClient
             this.webViewClient = client
 

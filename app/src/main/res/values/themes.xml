@@ -12,4 +12,6 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="AppThemeMD" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

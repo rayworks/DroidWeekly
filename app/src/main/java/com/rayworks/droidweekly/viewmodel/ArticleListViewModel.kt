@@ -3,14 +3,18 @@ package com.rayworks.droidweekly.viewmodel
 import androidx.databinding.ObservableBoolean
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.repository.IArticleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.*
 
 /** * The ViewModel for a list of articles.  */
 @HiltViewModel
@@ -27,6 +31,16 @@ class ArticleListViewModel @Inject constructor(
     var articleItems = repository.articleList
 
     val itemRefs = repository.refList
+
+    // migrate to flow
+    val articleState = repository.articleList.asFlow().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(
+            stopTimeoutMillis = 300,
+            replayExpirationMillis = 0
+        ),
+        initialValue = Collections.emptyList()
+    )
 
     @JvmField
     val articleLoaded = ObservableBoolean(true)

@@ -15,17 +15,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.LinearProgressIndicator
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.rayworks.droidweekly.dashboard.ui.theme.DroidWeeklyTheme
+import com.rayworks.droidweekly.dashboard.ui.theme.LightBlue
+import com.rayworks.droidweekly.ui.theme.DroidWeeklyTheme
 import kotlinx.coroutines.launch
 
 class DetailActivity : ComponentActivity() {
@@ -36,28 +37,50 @@ class DetailActivity : ComponentActivity() {
 
         setContent {
             DroidWeeklyTheme {
-                MainContent(url = intent.getStringExtra("url_val") ?: "") { finish() }
+                MainContent(
+                    url = intent.getStringExtra("url_val") ?: "",
+                    title = intent.getStringExtra("str_title") ?: ""
+                ) { finish() }
             }
         }
     }
 
     companion object {
         @JvmStatic
-        fun start(context: Context, url: String) {
+        fun start(context: Context, url: String, title: String? = "") {
             val starter = Intent(context, DetailActivity::class.java)
             starter.putExtra("url_val", url)
+            if (!title.isNullOrEmpty())
+                starter.putExtra("str_title", title)
             context.startActivity(starter)
         }
     }
 }
 
 @Composable
-fun MainContent(url: String, onClose: () -> Unit) {
+fun MainContent(url: String, title: String?, onClose: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("WebView", color = Color.White) },
-                backgroundColor = Color(0xff0f9d58)
+                title = {
+                    Text(
+                        if (title.isNullOrEmpty()) "WebView" else title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = Color.White,
+                        softWrap = true
+                    )
+                },
+                backgroundColor = LightBlue,
+                navigationIcon = {
+                    IconButton(onClick = { onClose.invoke() }) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Close",
+                            tint = Color.White
+                        )
+                    }
+                }
             )
         },
         content = { BodyContent(url, onClose) }

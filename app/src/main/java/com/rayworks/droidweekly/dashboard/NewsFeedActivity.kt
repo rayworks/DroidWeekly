@@ -3,6 +3,7 @@ package com.rayworks.droidweekly.dashboard
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -11,27 +12,36 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Scaffold
-import androidx.compose.material.TopAppBar
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.rayworks.droidweekly.R
 import com.rayworks.droidweekly.dashboard.ui.theme.LightBlue
 import com.rayworks.droidweekly.di.KeyValueStorage
 import com.rayworks.droidweekly.model.ArticleItem
+import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.ui.theme.DroidWeeklyTheme
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -45,26 +55,86 @@ class NewsFeedActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = {
-                            androidx.compose.material.Text(
-                                "DroidWeekly",
-                                color = Color.White
-                            )
-                        },
-                        backgroundColor = LightBlue
-                    )
-                },
-                content = {
-                    feedsList(Modifier.padding(it), vm = viewModel, onViewUrl = { url, title ->
-                        val intent = Intent(Intent.ACTION_VIEW)
-                        intent.data = Uri.parse(url)
-                        DetailActivity.start(this@NewsFeedActivity, url, title = title)
-                    })
+            BuildContent()
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun BuildContent() {
+        val topAppBarState = rememberTopAppBarState()
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
+        val scaffoldState = rememberScaffoldState()
+
+        val coroutineScope = rememberCoroutineScope()
+
+        Scaffold(
+            scaffoldState = scaffoldState,
+            topBar = {
+                FeedTopAppBar(
+                    openDrawer = {
+                        coroutineScope.launch {
+                            scaffoldState.drawerState.open()
+                        }
+                    },
+                    appBarState = topAppBarState,
+                    scrollBehavior = scrollBehavior
+                )
+            },
+            content = { innerPadding ->
+                val contentModifier = Modifier
+                    .padding(innerPadding)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+
+                feedsList(contentModifier, vm = viewModel, onViewUrl = { url, title ->
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.data = Uri.parse(url)
+                    DetailActivity.start(this@NewsFeedActivity, url, title = title)
+                })
+            },
+            drawerContent = {
+                BuildDrawerContent(vm = viewModel) { ref ->
+                    Toast.makeText(
+                        this@NewsFeedActivity,
+                        "${ref.title} clicked",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-            )
+            }
+        )
+    }
+
+    @Composable
+    private fun BuildDrawerContent(
+        modifier: Modifier = Modifier,
+        vm: ArticleListViewModel,
+        onRefClick: (ref: OldItemRef) -> Unit
+    ) {
+        val refState = vm.itemRefState.collectAsState()
+
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+
+            if (refState.value.isNotEmpty()) {
+                items(refState.value) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .clickable { onRefClick.invoke(it) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            it.title,
+                            textAlign = TextAlign.Center,
+                            fontSize = 14.sp,
+                            color = Color.Blue
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -75,19 +145,68 @@ class NewsFeedActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FeedTopAppBar(
+    openDrawer: () -> Unit, modifier: Modifier = Modifier,
+    appBarState: TopAppBarState = rememberTopAppBarState(),
+    scrollBehavior: TopAppBarScrollBehavior? = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        appBarState
+    )
+) {
+    val ctx = LocalContext.current
+    CenterAlignedTopAppBar(
+        title = {
+            androidx.compose.material.Text(
+                "DroidWeekly",
+                color = Color.White,
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = openDrawer) {
+                Icon(
+                    Icons.Default.Menu,
+                    "menu",
+                    tint = Color.White
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = {
+                Toast.makeText(
+                    ctx,
+                    "Search is not yet implemented ;)",
+                    Toast.LENGTH_LONG
+                ).show()
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = stringResource(R.string.cd_search),
+                    tint = Color.White
+                )
+            }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = LightBlue),
+        scrollBehavior = scrollBehavior,
+        modifier = modifier
+    )
+}
+
 @Composable
 fun feedsList(
     modifier: Modifier = Modifier,
     vm: ArticleListViewModel,
-    onViewUrl: (url: String, title:String?) -> Unit
+    onViewUrl: (url: String, title: String?) -> Unit
 ) {
 
     DroidWeeklyTheme {
         val listState = vm.articleState.collectAsState()
 
-        Surface(color = MaterialTheme.colorScheme.background) {
+        Surface(modifier = modifier, color = MaterialTheme.colorScheme.background) {
             if (listState.value != null && listState.value.size > 1)
                 LazyColumn(
+                    modifier,
                     contentPadding = PaddingValues(all = 16.dp)
                 ) {
                     items(items = listState.value) {
@@ -100,10 +219,16 @@ fun feedsList(
                         }
                     }
                 }
-            else
+            else {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = "Empty list...")
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 2.dp
+                    )
                 }
+
+            }
+
         }
     }
 }

@@ -32,6 +32,15 @@ class ArticleListViewModel @Inject constructor(
 
     val itemRefs = repository.refList
 
+    val itemRefState = repository.refList.asFlow().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(
+            stopTimeoutMillis = 300,
+            replayExpirationMillis = 0
+        ),
+        initialValue = Collections.emptyList()
+    )
+
     // migrate to flow
     val articleState = repository.articleList.asFlow().stateIn(
         scope = viewModelScope,

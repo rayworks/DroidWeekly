@@ -3,6 +3,7 @@ package com.rayworks.droidweekly.dashboard
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
 import android.webkit.*
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,8 +41,15 @@ class DetailActivity : ComponentActivity() {
             DroidWeeklyTheme {
                 MainContent(
                     url = intent.getStringExtra("url_val") ?: "",
-                    title = intent.getStringExtra("str_title") ?: ""
-                ) { finish() }
+                    title = intent.getStringExtra("str_title") ?: "",
+                    onClose = { finish() }
+
+                ) { url ->
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        data = Uri.parse(url)
+                    }
+                    startActivity(intent)
+                }
             }
         }
     }
@@ -58,7 +67,7 @@ class DetailActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainContent(url: String, title: String?, onClose: () -> Unit) {
+fun MainContent(url: String, title: String?, onClose: () -> Unit, onShare: (url: String) -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -77,6 +86,17 @@ fun MainContent(url: String, title: String?, onClose: () -> Unit) {
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Close",
+                            tint = Color.White
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        onShare.invoke(url)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Share",
                             tint = Color.White
                         )
                     }

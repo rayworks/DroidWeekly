@@ -28,7 +28,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,40 +67,42 @@ class NewsFeedActivity : ComponentActivity() {
 
         val coroutineScope = rememberCoroutineScope()
 
-        Scaffold(
-            scaffoldState = scaffoldState,
-            topBar = {
-                FeedTopAppBar(
-                    openDrawer = {
-                        coroutineScope.launch {
-                            scaffoldState.drawerState.open()
-                        }
-                    },
-                    appBarState = topAppBarState,
-                    scrollBehavior = scrollBehavior
-                )
-            },
-            content = { innerPadding ->
-                val contentModifier = Modifier
-                    .padding(innerPadding)
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+        DroidWeeklyTheme {
+            Scaffold(
+                scaffoldState = scaffoldState,
+                topBar = {
+                    FeedTopAppBar(
+                        openDrawer = {
+                            coroutineScope.launch {
+                                scaffoldState.drawerState.open()
+                            }
+                        },
+                        appBarState = topAppBarState,
+                        scrollBehavior = scrollBehavior
+                    )
+                },
+                content = { innerPadding ->
+                    val contentModifier = Modifier
+                        .padding(innerPadding)
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
 
-                feedsList(contentModifier, vm = viewModel, onViewUrl = { url, title ->
-                    val intent = Intent(Intent.ACTION_VIEW)
-                    intent.data = Uri.parse(url)
-                    DetailActivity.start(this@NewsFeedActivity, url, title = title)
-                })
-            },
-            drawerContent = {
-                BuildDrawerContent(vm = viewModel) { ref ->
-                    Toast.makeText(
-                        this@NewsFeedActivity,
-                        "${ref.title} clicked",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    FeedList(contentModifier, vm = viewModel, onViewUrl = { url, title ->
+                        val intent = Intent(Intent.ACTION_VIEW)
+                        intent.data = Uri.parse(url)
+                        DetailActivity.start(this@NewsFeedActivity, url, title = title)
+                    })
+                },
+                drawerContent = {
+                    BuildDrawerContent(vm = viewModel) { ref ->
+                        Toast.makeText(
+                            this@NewsFeedActivity,
+                            "${ref.title} clicked",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 
     @Composable
@@ -194,39 +195,36 @@ fun FeedTopAppBar(
 }
 
 @Composable
-fun feedsList(
+fun FeedList(
     modifier: Modifier = Modifier,
     vm: ArticleListViewModel,
     onViewUrl: (url: String, title: String?) -> Unit
 ) {
 
-    DroidWeeklyTheme {
-        val listState = vm.articleState.collectAsState()
+    val listState = vm.articleState.collectAsState()
 
-        Surface(modifier = modifier, color = MaterialTheme.colorScheme.background) {
-            if (listState.value != null && listState.value.size > 1)
-                LazyColumn(
-                    modifier,
-                    contentPadding = PaddingValues(all = 16.dp)
-                ) {
-                    items(items = listState.value) {
-                        ArticleCard(data = it) { data: ArticleItem ->
-                            println("item '${data.title}' clicked")
+    Surface(modifier = modifier, color = MaterialTheme.colorScheme.background) {
+        if (listState.value != null && listState.value.size > 1)
+            LazyColumn(
+                modifier,
+                contentPadding = PaddingValues(all = 16.dp)
+            ) {
+                items(items = listState.value) {
+                    ArticleCard(data = it) { data: ArticleItem ->
+                        println("item '${data.title}' clicked")
 
-                            if (data.linkage.isNotEmpty()) {
-                                onViewUrl.invoke(data.linkage, data.title)
-                            }
+                        if (data.linkage.isNotEmpty()) {
+                            onViewUrl.invoke(data.linkage, data.title)
                         }
                     }
                 }
-            else {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary,
-                        strokeWidth = 2.dp
-                    )
-                }
-
+            }
+        else {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 2.dp
+                )
             }
 
         }

@@ -20,6 +20,8 @@ import androidx.core.view.GravityCompat
 import androidx.databinding.Observable
 import androidx.databinding.Observable.OnPropertyChangedCallback
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -40,6 +42,7 @@ import com.rayworks.droidweekly.utils.getCapturedImageOutputUri
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -244,6 +247,12 @@ class MainActivity : AppCompatActivity() {
     private fun setupViewModel() {
         val dataBinding = ActivityMainBinding.bind(findViewById(R.id.drawer_layout))
         dataBinding.viewmodel = viewModel
+
+        viewModel.viewModelScope.launch {
+            viewModel.dataLoading.collect {
+                dataBinding.progressBar.visibility = if (it) View.VISIBLE else View.GONE
+            }
+        }
 
         // enables MutableLiveData to be update on your UI
         dataBinding.lifecycleOwner = this

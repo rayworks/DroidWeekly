@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.repository.IArticleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import java.io.IOException
@@ -26,8 +27,7 @@ class ArticleListViewModel @Inject constructor(
     val keyMenuId = "menu_item_id"
 
     @JvmField
-    val dataLoading = ObservableBoolean(false)
-
+    val dataLoading = MutableStateFlow(true) // ObservableBoolean(false)
     var articleItems = repository.articleList
 
     val itemRefs = repository.refList
@@ -83,11 +83,11 @@ class ArticleListViewModel @Inject constructor(
             }
         }
 
-        dataLoading.set(true)
         viewModelScope.launch {
             try {
+                dataLoading.emit(true)
                 repository.loadData()
-                dataLoading.set(false)
+                dataLoading.emit(false)
             } catch (ex: IOException) {
                 onLoadError(ex.message!!)
             }
@@ -98,13 +98,12 @@ class ArticleListViewModel @Inject constructor(
      * Loads the [articleItems] by related issue id.
      */
     fun loadBy(issueId: String) {
-        dataLoading.set(true)
 
         viewModelScope.launch {
             try {
+                dataLoading.emit(true)
                 repository.loadData(issueId)
-
-                dataLoading.set(false)
+                dataLoading.emit(false)
             } catch (ex: IOException) {
                 onLoadError(ex.message!!)
             }
@@ -113,7 +112,11 @@ class ArticleListViewModel @Inject constructor(
 
     private fun onLoadError(err: String) {
         println(err)
-        dataLoading.set(false)
+
+        viewModelScope.launch {
+            dataLoading.emit(false)
+        }
+
         articleLoaded.set(false)
     }
 

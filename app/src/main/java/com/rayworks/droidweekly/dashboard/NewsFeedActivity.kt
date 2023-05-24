@@ -12,16 +12,21 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +34,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -41,6 +47,7 @@ import com.rayworks.droidweekly.ui.theme.DroidWeeklyTheme
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -51,11 +58,25 @@ class NewsFeedActivity : ComponentActivity() {
     @Inject
     var keyValueStorage: KeyValueStorage? = null
 
+    private lateinit var currRef: MutableState<String>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            currRef = rememberSaveable { mutableStateOf("") }
             BuildContent()
+
+            loadInitData()
         }
+    }
+
+    private fun loadInitData() {
+        val hasLastRef = this::currRef.isInitialized && currRef.value.isNotEmpty()
+        Timber.d(">>> last selected : $hasLastRef")
+        if (hasLastRef)
+            viewModel.loadBy(currRef.value)
+        else
+            viewModel.load(true)
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -94,11 +115,14 @@ class NewsFeedActivity : ComponentActivity() {
                 },
                 drawerContent = {
                     BuildDrawerContent(vm = viewModel) { ref ->
-                        Toast.makeText(
-                            this@NewsFeedActivity,
-                            "${ref.title} clicked",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        viewModel.loadBy(ref.relativePath)
+
+                        // update the selected issue
+                        currRef.value = ref.relativePath
+
+                        coroutineScope.launch {
+                            scaffoldState.drawerState.close()
+                        }
                     }
                 }
             )
@@ -119,30 +143,34 @@ class NewsFeedActivity : ComponentActivity() {
         ) {
 
             if (refState.value.isNotEmpty()) {
+                if (currRef.value.isEmpty())
+                    currRef.value = refState.value[0].relativePath
+
                 items(refState.value) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
-                            .clickable { onRefClick.invoke(it) },
-                        contentAlignment = Alignment.Center
+                            .padding(8.dp)
+                            .height(32.dp)
+                            .clickable {
+                                onRefClick.invoke(it)
+                            },
+                        contentAlignment = Alignment.CenterStart
                     ) {
-                        Text(
-                            it.title,
-                            textAlign = TextAlign.Center,
-                            fontSize = 14.sp,
-                            color = Color.Blue
-                        )
+                        Row {
+                            Text(
+                                it.title,
+                                textAlign = TextAlign.Center,
+                                fontSize = 14.sp,
+                                color = Color.Blue
+                            )
+                            if (currRef.value == it.relativePath)
+                                Icon(imageVector = Icons.Default.Check, "", tint = Color.Blue)
+                        }
                     }
                 }
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        viewModel.load(true)
     }
 }
 
@@ -202,14 +230,33 @@ fun FeedList(
 ) {
 
     val listState = vm.articleState.collectAsState()
+    val showLoading = vm.dataLoading.collectAsState()
 
     Surface(modifier = modifier, color = MaterialTheme.colorScheme.background) {
-        if (listState.value != null && listState.value.size > 1)
+        if (showLoading.value) {
+            return@Surface Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .width(32.dp)
+                        .height(32.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 2.dp
+                )
+            }
+        }
+
+        val items = listState.value
+        if (items != null && items.size > 1) {
+            println(">>> list state : $items")
             LazyColumn(
                 modifier,
-                contentPadding = PaddingValues(all = 16.dp)
+                contentPadding = PaddingValues(all = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(items = listState.value) {
+                itemsIndexed(items = items) { index, it ->
                     ArticleCard(data = it) { data: ArticleItem ->
                         println("item '${data.title}' clicked")
 
@@ -217,16 +264,14 @@ fun FeedList(
                             onViewUrl.invoke(data.linkage, data.title)
                         }
                     }
+
+                    val hiddenSeparator =
+                        it.linkage.isEmpty() || index < (items.size - 1) && items[index + 1].linkage.isEmpty()
+                    if (!hiddenSeparator) {
+                        Divider(color = Color.Black, thickness = Dp.Hairline)
+                    }
                 }
             }
-        else {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 2.dp
-                )
-            }
-
         }
     }
 }
@@ -252,18 +297,27 @@ fun ArticleCard(data: ArticleItem, onItemClick: (data: ArticleItem) -> Unit) {
                         .padding(end = 16.dp)
                 )
             Column {
-                if (data.title.isNotEmpty())
-                    Text(
-                        text = data.title,
-                        fontSize = 16.sp,
-                        color = if (data.description.isEmpty()) Color.White else MaterialTheme.colorScheme.secondary,
+                if (data.title.isNotEmpty()) {
+                    val noDesc = data.description.isEmpty()
+                    Box(
                         modifier = Modifier
-                            .padding(top = 16.dp)
-                            .fillMaxWidth()
-                            .background(
-                                color = if (data.description.isEmpty()) LightBlue else Color.Transparent
-                            )
-                    )
+                            .heightIn(min = if (noDesc) 48.dp else Dp.Unspecified)
+                            .background(color = if (noDesc) LightBlue else Color.Transparent),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = data.title,
+                            fontSize = 16.sp,
+                            color = if (noDesc) Color.White else MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier
+                                .padding(
+                                    top = if (noDesc) 0.dp else 16.dp,
+                                    start = if (noDesc) 16.dp else 0.dp
+                                )
+                                .fillMaxWidth()
+                        )
+                    }
+                }
 
                 if (data.description.isNotEmpty())
                     Text(

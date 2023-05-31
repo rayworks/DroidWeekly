@@ -34,7 +34,6 @@ import kotlinx.coroutines.launch
 class DetailActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
 
         setContent {
@@ -42,7 +41,7 @@ class DetailActivity : ComponentActivity() {
                 MainContent(
                     url = intent.getStringExtra("url_val") ?: "",
                     title = intent.getStringExtra("str_title") ?: "",
-                    onClose = { finish() }
+                    onClose = { finish() },
 
                 ) { url ->
                     val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -59,8 +58,9 @@ class DetailActivity : ComponentActivity() {
         fun start(context: Context, url: String, title: String? = "") {
             val starter = Intent(context, DetailActivity::class.java)
             starter.putExtra("url_val", url)
-            if (!title.isNullOrEmpty())
+            if (!title.isNullOrEmpty()) {
                 starter.putExtra("str_title", title)
+            }
             context.startActivity(starter)
         }
     }
@@ -77,7 +77,7 @@ fun MainContent(url: String, title: String?, onClose: () -> Unit, onShare: (url:
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         color = Color.White,
-                        softWrap = true
+                        softWrap = true,
                     )
                 },
                 backgroundColor = LightBlue,
@@ -86,7 +86,7 @@ fun MainContent(url: String, title: String?, onClose: () -> Unit, onShare: (url:
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Close",
-                            tint = Color.White
+                            tint = Color.White,
                         )
                     }
                 },
@@ -97,13 +97,13 @@ fun MainContent(url: String, title: String?, onClose: () -> Unit, onShare: (url:
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = "Share",
-                            tint = Color.White
+                            tint = Color.White,
                         )
                     }
-                }
+                },
             )
         },
-        content = { BodyContent(url, onClose) }
+        content = { BodyContent(url, onClose) },
     )
 }
 
@@ -114,7 +114,7 @@ fun BodyContent(url: String, onClose: () -> Unit) {
     Column(
         modifier = Modifier
             .background(colorResource(android.R.color.white))
-            .fillMaxSize()
+            .fillMaxSize(),
     ) {
         // web page loading progress
         AnimatedVisibility(visible = (rememberWebViewProgress > 0f && rememberWebViewProgress < 1f)) {
@@ -124,7 +124,7 @@ fun BodyContent(url: String, onClose: () -> Unit) {
                     .fillMaxWidth()
                     .height(4.dp),
                 color = Color.Cyan,
-                backgroundColor = colorResource(android.R.color.white)
+                backgroundColor = colorResource(android.R.color.white),
             )
         }
 
@@ -142,7 +142,8 @@ fun BodyContent(url: String, onClose: () -> Unit) {
                 } else {
                     onClose.invoke()
                 }
-            }, initSettings = { settings ->
+            },
+            initSettings = { settings ->
                 settings?.apply {
                     javaScriptEnabled = true
                     useWideViewPort = true
@@ -153,10 +154,10 @@ fun BodyContent(url: String, onClose: () -> Unit) {
                     javaScriptCanOpenWindowsAutomatically = true
                     cacheMode = WebSettings.LOAD_NO_CACHE
                 }
-            })
+            },
+        )
     }
 }
-
 
 @Composable
 fun WebContent(
@@ -164,9 +165,8 @@ fun WebContent(
     url: String,
     onProgressChange: (progress: Int) -> Unit = {},
     onBack: (webView: WebView?) -> Unit,
-    initSettings: (webSettings: WebSettings?) -> Unit = {}
+    initSettings: (webSettings: WebSettings?) -> Unit = {},
 ) {
-
     val chromeClient = object : WebChromeClient() {
         override fun onProgressChanged(view: WebView?, newProgress: Int) {
             onProgressChange(newProgress)
@@ -187,7 +187,7 @@ fun WebContent(
 
         override fun shouldOverrideUrlLoading(
             view: WebView?,
-            request: WebResourceRequest?
+            request: WebResourceRequest?,
         ): Boolean {
             return super.shouldOverrideUrlLoading(view, request)
         }
@@ -195,7 +195,7 @@ fun WebContent(
         override fun onReceivedSslError(
             view: WebView?,
             handler: SslErrorHandler?,
-            error: SslError?
+            error: SslError?,
         ) {
             super.onReceivedSslError(view, handler, error)
         }
@@ -203,7 +203,7 @@ fun WebContent(
         override fun onReceivedError(
             view: WebView?,
             request: WebResourceRequest?,
-            error: WebResourceError?
+            error: WebResourceError?,
         ) {
             super.onReceivedError(view, request, error)
         }
@@ -229,4 +229,3 @@ fun WebContent(
         }
     }
 }
-

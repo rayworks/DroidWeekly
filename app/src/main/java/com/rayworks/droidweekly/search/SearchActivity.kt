@@ -58,7 +58,7 @@ class SearchActivity : AppCompatActivity() {
             this.layoutManager = layoutManager
 
             addItemDecoration(
-                DividerItemDecoration(this@SearchActivity, layoutManager.orientation)
+                DividerItemDecoration(this@SearchActivity, layoutManager.orientation),
             )
         }
     }

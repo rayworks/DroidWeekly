@@ -1,5 +1,6 @@
 package com.rayworks.droidweekly.dashboard
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -22,11 +23,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
 import com.rayworks.droidweekly.R
 import com.rayworks.droidweekly.dashboard.ui.theme.LightBlue
@@ -58,12 +57,9 @@ class NewsFeedActivity : ComponentActivity() {
     @Inject
     var keyValueStorage: KeyValueStorage? = null
 
-    private lateinit var currRef: MutableState<String>
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            currRef = rememberSaveable { mutableStateOf("") }
             BuildContent()
 
             loadInitData()
@@ -71,12 +67,13 @@ class NewsFeedActivity : ComponentActivity() {
     }
 
     private fun loadInitData() {
-        val hasLastRef = this::currRef.isInitialized && currRef.value.isNotEmpty()
+        val hasLastRef = viewModel.selectedRefPath.value.isNotEmpty()
         Timber.d(">>> last selected : $hasLastRef")
-        if (hasLastRef)
-            viewModel.loadBy(currRef.value)
-        else
+        if (viewModel.selectedRefPath.value.isNotEmpty()) {
+            viewModel.loadBy(viewModel.selectedRefPath.value)
+        } else {
             viewModel.load(true)
+        }
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -99,7 +96,8 @@ class NewsFeedActivity : ComponentActivity() {
                             }
                         },
                         appBarState = topAppBarState,
-                        scrollBehavior = scrollBehavior
+                        scrollBehavior = scrollBehavior,
+                        context = this@NewsFeedActivity,
                     )
                 },
                 content = { innerPadding ->
@@ -118,13 +116,15 @@ class NewsFeedActivity : ComponentActivity() {
                         viewModel.loadBy(ref.relativePath)
 
                         // update the selected issue
-                        currRef.value = ref.relativePath
+                        lifecycleScope.launch {
+                            viewModel.selectedRefPath.emit(ref.relativePath)
+                        }
 
                         coroutineScope.launch {
                             scaffoldState.drawerState.close()
                         }
                     }
-                }
+                },
             )
         }
     }
@@ -133,18 +133,22 @@ class NewsFeedActivity : ComponentActivity() {
     private fun BuildDrawerContent(
         modifier: Modifier = Modifier,
         vm: ArticleListViewModel,
-        onRefClick: (ref: OldItemRef) -> Unit
+        onRefClick: (ref: OldItemRef) -> Unit,
     ) {
         val refState = vm.itemRefState.collectAsState()
+        val refSelected = vm.selectedRefPath.collectAsState()
 
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
-
             if (refState.value.isNotEmpty()) {
-                if (currRef.value.isEmpty())
-                    currRef.value = refState.value[0].relativePath
+                // To be refactored : set the default ref
+                lifecycleScope.launch {
+                    if (vm.selectedRefPath.value.isEmpty()) {
+                        vm.selectedRefPath.emit(refState.value[0].relativePath)
+                    }
+                }
 
                 items(refState.value) {
                     Box(
@@ -155,17 +159,18 @@ class NewsFeedActivity : ComponentActivity() {
                             .clickable {
                                 onRefClick.invoke(it)
                             },
-                        contentAlignment = Alignment.CenterStart
+                        contentAlignment = Alignment.CenterStart,
                     ) {
                         Row {
                             Text(
                                 it.title,
                                 textAlign = TextAlign.Center,
                                 fontSize = 14.sp,
-                                color = Color.Blue
+                                color = Color.Blue,
                             )
-                            if (currRef.value == it.relativePath)
+                            if (refSelected.value == it.relativePath) {
                                 Icon(imageVector = Icons.Default.Check, "", tint = Color.Blue)
+                            }
                         }
                     }
                 }
@@ -177,19 +182,21 @@ class NewsFeedActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedTopAppBar(
-    openDrawer: () -> Unit, modifier: Modifier = Modifier,
+    openDrawer: () -> Unit,
+    modifier: Modifier = Modifier,
     appBarState: TopAppBarState = rememberTopAppBarState(),
     scrollBehavior: TopAppBarScrollBehavior? = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
-        appBarState
-    )
+        appBarState,
+    ),
+    context: Context,
 ) {
     val ctx = LocalContext.current
     CenterAlignedTopAppBar(
         title = {
             androidx.compose.material.Text(
-                "DroidWeekly",
+                text = context.getString(R.string.app_name),
                 color = Color.White,
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.headlineSmall,
             )
         },
         navigationIcon = {
@@ -197,7 +204,7 @@ fun FeedTopAppBar(
                 Icon(
                     Icons.Default.Menu,
                     "menu",
-                    tint = Color.White
+                    tint = Color.White,
                 )
             }
         },
@@ -206,19 +213,19 @@ fun FeedTopAppBar(
                 Toast.makeText(
                     ctx,
                     "Search is not yet implemented ;)",
-                    Toast.LENGTH_LONG
+                    Toast.LENGTH_LONG,
                 ).show()
             }) {
                 Icon(
                     imageVector = Icons.Filled.Search,
                     contentDescription = stringResource(R.string.cd_search),
-                    tint = Color.White
+                    tint = Color.White,
                 )
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = LightBlue),
         scrollBehavior = scrollBehavior,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -226,9 +233,8 @@ fun FeedTopAppBar(
 fun FeedList(
     modifier: Modifier = Modifier,
     vm: ArticleListViewModel,
-    onViewUrl: (url: String, title: String?) -> Unit
+    onViewUrl: (url: String, title: String?) -> Unit,
 ) {
-
     val listState = vm.articleState.collectAsState()
     val showLoading = vm.dataLoading.collectAsState()
 
@@ -236,14 +242,14 @@ fun FeedList(
         if (showLoading.value) {
             return@Surface Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier
                         .width(32.dp)
                         .height(32.dp),
                     color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 2.dp
+                    strokeWidth = 2.dp,
                 )
             }
         }
@@ -254,7 +260,7 @@ fun FeedList(
             LazyColumn(
                 modifier,
                 contentPadding = PaddingValues(all = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 itemsIndexed(items = items) { index, it ->
                     ArticleCard(data = it) { data: ArticleItem ->
@@ -278,24 +284,28 @@ fun FeedList(
 
 @Composable
 fun ArticleCard(data: ArticleItem, onItemClick: (data: ArticleItem) -> Unit) {
-    Box(modifier = Modifier
-        .clickable {
-            if (data.description.isNotEmpty())
-                onItemClick.invoke(data)
-        }) {
-
+    Box(
+        modifier = Modifier
+            .clickable {
+                if (data.description.isNotEmpty()) {
+                    onItemClick.invoke(data)
+                }
+            },
+    ) {
         Row(
-            modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             val invalid = data.imageUrl?.isEmpty() ?: true
-            if (!invalid)
+            if (!invalid) {
                 AsyncImage(
                     model = data.imageUrl,
                     contentDescription = null,
                     modifier = Modifier
                         .size(72.dp)
-                        .padding(end = 16.dp)
+                        .padding(end = 16.dp),
                 )
+            }
             Column {
                 if (data.title.isNotEmpty()) {
                     val noDesc = data.description.isEmpty()
@@ -303,7 +313,7 @@ fun ArticleCard(data: ArticleItem, onItemClick: (data: ArticleItem) -> Unit) {
                         modifier = Modifier
                             .heightIn(min = if (noDesc) 48.dp else Dp.Unspecified)
                             .background(color = if (noDesc) LightBlue else Color.Transparent),
-                        contentAlignment = Alignment.CenterStart
+                        contentAlignment = Alignment.CenterStart,
                     ) {
                         Text(
                             text = data.title,
@@ -312,19 +322,20 @@ fun ArticleCard(data: ArticleItem, onItemClick: (data: ArticleItem) -> Unit) {
                             modifier = Modifier
                                 .padding(
                                     top = if (noDesc) 0.dp else 16.dp,
-                                    start = if (noDesc) 16.dp else 0.dp
+                                    start = if (noDesc) 16.dp else 0.dp,
                                 )
-                                .fillMaxWidth()
+                                .fillMaxWidth(),
                         )
                     }
                 }
 
-                if (data.description.isNotEmpty())
+                if (data.description.isNotEmpty()) {
                     Text(
                         text = data.description,
                         fontSize = 14.sp,
-                        modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
+                        modifier = Modifier.padding(top = 16.dp, bottom = 16.dp),
                     )
+                }
             }
         }
     }

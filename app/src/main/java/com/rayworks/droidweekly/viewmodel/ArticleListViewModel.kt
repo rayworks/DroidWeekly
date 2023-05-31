@@ -11,17 +11,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
-import java.io.IOException
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.IOException
 import java.util.*
+import javax.inject.Inject
 
 /** * The ViewModel for a list of articles.  */
 @HiltViewModel
 class ArticleListViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val repository: IArticleRepository
+    private val repository: IArticleRepository,
 ) : ViewModel() {
 
     val keyMenuId = "menu_item_id"
@@ -36,9 +36,9 @@ class ArticleListViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(
             stopTimeoutMillis = 300,
-            replayExpirationMillis = 0
+            replayExpirationMillis = 0,
         ),
-        initialValue = Collections.emptyList()
+        initialValue = Collections.emptyList(),
     )
 
     // migrate to flow
@@ -46,13 +46,15 @@ class ArticleListViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(
             stopTimeoutMillis = 300,
-            replayExpirationMillis = 0
+            replayExpirationMillis = 0,
         ),
-        initialValue = Collections.emptyList()
+        initialValue = Collections.emptyList(),
     )
 
     @JvmField
     val articleLoaded = ObservableBoolean(true)
+
+    var selectedRefPath = MutableStateFlow("")
 
     var selectedItemId: Int = 0
         set(value) {
@@ -98,7 +100,6 @@ class ArticleListViewModel @Inject constructor(
      * Loads the [articleItems] by related issue id.
      */
     fun loadBy(issueId: String) {
-
         viewModelScope.launch {
             try {
                 dataLoading.emit(true)

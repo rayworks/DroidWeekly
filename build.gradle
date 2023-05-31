@@ -15,7 +15,7 @@ buildscript {
         mavenLocal()
         google()
         maven { url "https://jitpack.io" }
-        maven { url "https://plugins.gradle.org/m2/"}
+        maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
         classpath "com.android.tools.build:gradle:$android_gradle_version"
@@ -24,7 +24,7 @@ buildscript {
 
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
 
-        classpath "com.diffplug.spotless:spotless-plugin-gradle:6.11.0"
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:6.18.0"
     }
 }
 
@@ -34,7 +34,7 @@ allprojects {
         mavenLocal()
         google()
         maven { url "https://jitpack.io" }
-        maven { url "https://plugins.gradle.org/m2/"}
+        maven { url "https://plugins.gradle.org/m2/" }
     }
 }
 
@@ -42,11 +42,18 @@ subprojects {
     apply plugin: "com.diffplug.spotless"
 
 
-    def ktlintVer = "0.45.2"
-    def map = new HashMap<String, String>()
+    def ktlintVer = "0.48.1"
+
+    def disabledRules = [
+            "standard_no-wildcard-imports",
+            "no-wildcard-imports",
+            "import-ordering"
+    ]
+
+    def map = new HashMap<String, Object>()
     map.put("max_line_length", "120")
     map.put("indent_size", 4)
-    map.put("disabled_rules", "import-ordering")
+    map.put("disabled_rules", disabledRules)
 
     def data = new HashMap<String, String>()
     data.put("android", "true")
@@ -55,9 +62,9 @@ subprojects {
         kotlin {
             target("**/*.kt")
             ktlint(ktlintVer)
-            .setUseExperimental(true)
-            .userData(data)
-            .editorConfigOverride(map)
+                    .setUseExperimental(true)
+                    .userData(data)
+                    .editorConfigOverride(map)
         }
     }
 }

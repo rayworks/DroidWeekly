@@ -29,7 +29,7 @@ object AppModule {
             .databaseBuilder(
                 context.applicationContext,
                 IssueDatabase::class.java,
-                DATABASE_NAME
+                DATABASE_NAME,
             )
             .fallbackToDestructiveMigration()
             .build()

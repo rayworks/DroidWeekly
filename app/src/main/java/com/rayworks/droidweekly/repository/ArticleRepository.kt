@@ -8,15 +8,15 @@ import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.database.ArticleDao
 import com.rayworks.droidweekly.repository.database.entity.Article
 import com.rayworks.droidweekly.utils.jsonToObject
-import java.io.IOException
-import java.util.LinkedList
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import timber.log.Timber
+import java.io.IOException
+import java.util.LinkedList
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 /***
  * A repository as the data entry to load the article items.
@@ -24,7 +24,7 @@ import timber.log.Timber
 class ArticleRepository @Inject constructor(
     val articleDao: ArticleDao,
     val preferences: KeyValueStorage,
-    val parser: WebContentParser
+    val parser: WebContentParser,
 ) : IArticleRepository {
     private var _refList: MutableLiveData<List<OldItemRef>> = MutableLiveData()
     private var _articleList: MutableLiveData<List<ArticleItem>> = MutableLiveData()
@@ -34,7 +34,7 @@ class ArticleRepository @Inject constructor(
     private var okHttpClient: OkHttpClient = OkHttpClient.Builder()
         .readTimeout(
             TIMEOUT_IN_SECOND.toLong(),
-            TimeUnit.SECONDS
+            TimeUnit.SECONDS,
         )
         .writeTimeout(30, TimeUnit.SECONDS)
         .connectTimeout(30, TimeUnit.SECONDS)
@@ -83,7 +83,7 @@ class ArticleRepository @Inject constructor(
                 val articleItem = ArticleItem(
                     article.title,
                     article.description,
-                    article.linkage
+                    article.linkage,
                 )
                 articleItem.imgFrameColor = article.imgFrameColor
                 articleItem.imageUrl = article.imageUrl
@@ -206,7 +206,7 @@ class ArticleRepository @Inject constructor(
             val articleItem = ArticleItem(
                 article.title,
                 article.description,
-                article.linkage
+                article.linkage,
             )
             articleItem.imgFrameColor = article.imgFrameColor
             articleItem.imageUrl = article.imageUrl
@@ -217,7 +217,7 @@ class ArticleRepository @Inject constructor(
 
     private fun getArticleEntities(
         issueId: Int,
-        items: List<ArticleItem>
+        items: List<ArticleItem>,
     ): List<Article> {
         val entities: MutableList<Article> = LinkedList()
         var index = 0
@@ -230,7 +230,7 @@ class ArticleRepository @Inject constructor(
                 imgFrameColor = item.imgFrameColor,
                 linkage = item.linkage,
                 order = index,
-                issueId = issueId
+                issueId = issueId,
             )
             entities.add(article)
         }

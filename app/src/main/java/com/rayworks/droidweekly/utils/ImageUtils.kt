@@ -25,13 +25,13 @@ fun Activity.cropImage(imageUri: Uri) {
     val selectedBitmap: Bitmap? = getBitmap(this, imageUri)
     val selectedImgFile = File(
         getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-        getTimestamp().toString() + "_selectedImg.jpg"
+        getTimestamp().toString() + "_selectedImg.jpg",
     )
     convertBitmapToFile(selectedImgFile, selectedBitmap!!)
 
     val croppedImgFile = File(
         getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-        getTimestamp().toString() + "_croppedImg.jpg"
+        getTimestamp().toString() + "_croppedImg.jpg",
     )
     startCrop(this, Uri.fromFile(selectedImgFile), Uri.fromFile(croppedImgFile))
 }
@@ -40,7 +40,9 @@ fun getFileUri(context: Context, pkg: String, file: File): Uri {
     val auth = "$pkg.fileprovider"
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         FileProvider.getUriForFile(context, auth, file)
-    } else Uri.fromFile(file)
+    } else {
+        Uri.fromFile(file)
+    }
 }
 
 fun getTimestamp(): Long {
@@ -78,10 +80,7 @@ fun convertBitmapToFile(destinationFile: File, bitmap: Bitmap) {
 fun getBitmap(context: Context, imageUri: Uri): Bitmap? {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         return ImageDecoder.decodeBitmap(
-            ImageDecoder.createSource(
-                context.contentResolver,
-                imageUri
-            )
+            ImageDecoder.createSource(context.contentResolver, imageUri),
         )
     } else {
         context.contentResolver.openInputStream(imageUri)?.let {

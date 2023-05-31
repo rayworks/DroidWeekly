@@ -20,7 +20,6 @@ import androidx.core.view.GravityCompat
 import androidx.databinding.Observable
 import androidx.databinding.Observable.OnPropertyChangedCallback
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -97,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         articleAdapter.setViewArticleListener { url: String? ->
             val intent = Intent(Intent.ACTION_VIEW)
             intent.data = Uri.parse(url)
-           // startActivity(intent)
+            // startActivity(intent)
 
             DetailActivity.start(this, url!!)
         }
@@ -105,7 +104,7 @@ class MainActivity : AppCompatActivity() {
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
         recyclerView.addItemDecoration(
-            DividerItemDecoration(this, layoutManager.orientation)
+            DividerItemDecoration(this, layoutManager.orientation),
         )
     }
 
@@ -148,7 +147,7 @@ class MainActivity : AppCompatActivity() {
                     ActivityCompat.requestPermissions(
                         this,
                         arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        REQUEST_STORAGE_WRITE_ACCESS_PERMISSION
+                        REQUEST_STORAGE_WRITE_ACCESS_PERMISSION,
                     )
                 } else {
                     requestPickImage()
@@ -160,7 +159,7 @@ class MainActivity : AppCompatActivity() {
                     ActivityCompat.requestPermissions(
                         this,
                         arrayOf(Manifest.permission.CAMERA),
-                        REQUEST_CAMERA_ACCESS_PERMISSION
+                        REQUEST_CAMERA_ACCESS_PERMISSION,
                     )
                 } else {
                     requestTakeShot()
@@ -179,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         }
         intent.putExtra(
             MediaStore.EXTRA_OUTPUT,
-            getCapturedImageOutputUri(this, capturedImageName)
+            getCapturedImageOutputUri(this, capturedImageName),
         )
         startActivityForResult(intent, REQUEST_CODE_PHONE_CAMERA)
     }
@@ -211,9 +210,11 @@ class MainActivity : AppCompatActivity() {
                     loadAvatarIfAny(croppedImageUri, avatarImageView)
                 }
             }
-            REQUEST_CODE_PHONE_ALBUM -> if (data != null && data.data != null) this.cropImage(
-                data.data!!
-            )
+            REQUEST_CODE_PHONE_ALBUM -> if (data != null && data.data != null) {
+                this.cropImage(
+                    data.data!!,
+                )
+            }
             REQUEST_CODE_PHONE_CAMERA -> {
                 // retrieve the persisted file
                 val capturedImageUri = getCapturedImageOutputUri(this, capturedImageName)
@@ -231,7 +232,7 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
@@ -265,13 +266,13 @@ class MainActivity : AppCompatActivity() {
                         val toast = Toast.makeText(
                             this@MainActivity,
                             "Failed to load content, please try again late",
-                            Toast.LENGTH_SHORT
+                            Toast.LENGTH_SHORT,
                         )
                         toast.setGravity(Gravity.CENTER, 0, 0)
                         toast.show()
                     }
                 }
-            }
+            },
         )
         viewModel.itemRefs.observe(this, { oldItemRefs: List<OldItemRef> ->
             val menu = navigationView.menu

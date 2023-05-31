@@ -49,7 +49,7 @@ inline fun <reified T> ViewModelStoreOwner.scoped(noinline creator: () -> T): La
  * The [ViewModel] wrapper.
  */
 class ScopeViewModel<V>(
-    val value: V
+    val value: V,
 ) : ViewModel() {
     /***
      * The [ViewModelProvider.Factory] wrapper.
@@ -67,7 +67,7 @@ class ScopeViewModel<V>(
  */
 class LazyScopedValue<T>(
     private val storeProducer: () -> ViewModelStore,
-    private val factoryProducer: () -> ViewModelProvider.Factory
+    private val factoryProducer: () -> ViewModelProvider.Factory,
 ) : Lazy<T> {
     private var cached: Any = NotSet
 
@@ -112,7 +112,7 @@ fun SearchView.queryTextFlow(): StateFlow<String> {
                 }
                 return true
             }
-        }
+        },
     )
 
     return query

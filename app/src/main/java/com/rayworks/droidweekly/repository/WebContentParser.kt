@@ -3,11 +3,11 @@ package com.rayworks.droidweekly.repository
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.repository.exception.WebContentParsingException
-import java.util.LinkedList
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
+import java.util.LinkedList
 
 class WebContentParser {
     companion object {
@@ -23,7 +23,9 @@ class WebContentParser {
                 var color: Long = colorString.substring(1).toLong(16)
                 if (colorString.length == 7) { // Set the alpha value
                     color = color or -0x1000000
-                } else require(colorString.length == 9) { "Unknown color" }
+                } else {
+                    require(colorString.length == 9) { "Unknown color" }
+                }
                 return color.toInt()
             }
 
@@ -77,7 +79,7 @@ class WebContentParser {
                 // build the issue menu items
                 itemRefs.add(
                     0,
-                    OldItemRef("Issue $latestIssueId", "/issues/issue-$latestId", latestId)
+                    OldItemRef("Issue $latestIssueId", "/issues/issue-$latestId", latestId),
                 )
             }
 
@@ -141,7 +143,7 @@ class WebContentParser {
     private fun parseArticles(
         tables: Elements,
         articleItems: MutableList<ArticleItem>,
-        map: MutableMap<String, String>
+        map: MutableMap<String, String>,
     ) {
         for (elem in tables) {
             val articleItem = ArticleItem()
@@ -179,7 +181,7 @@ class WebContentParser {
 
     private fun parseLegacyArticles(
         tables: Elements,
-        articleItems: MutableList<ArticleItem>
+        articleItems: MutableList<ArticleItem>,
     ) {
         for (i in tables.indices) {
             val articleItem = ArticleItem()

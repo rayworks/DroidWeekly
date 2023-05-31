@@ -15,7 +15,7 @@ import javax.inject.Inject
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val repository: IArticleRepository
+    private val repository: IArticleRepository,
 ) : ViewModel() {
 
     var queryFlow: StateFlow<String>? = null
@@ -27,7 +27,6 @@ class SearchViewModel @Inject constructor(
                         items.postValue(Collections.emptyList())
                     })
                 }
-
             }
         }
 
@@ -36,7 +35,7 @@ class SearchViewModel @Inject constructor(
 
     private suspend fun setupFlow(
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
-        onResetData: () -> Unit
+        onResetData: () -> Unit,
     ) {
         if (queryFlow == null) return
         queryFlow?.let { query ->
@@ -61,6 +60,5 @@ class SearchViewModel @Inject constructor(
                     items.value = it
                 }
         }
-
     }
 }

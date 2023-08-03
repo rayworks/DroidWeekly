@@ -23,7 +23,9 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,7 +62,11 @@ class NewsFeedActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            BuildContent()
+            BuildContent { url, title ->
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(url)
+                DetailActivity.start(this@NewsFeedActivity, url, title = title)
+            }
 
             loadInitData()
         }
@@ -78,11 +84,12 @@ class NewsFeedActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    private fun BuildContent() {
+    private fun BuildContent(onArticleClick: (url: String, title: String?) -> Unit) {
         val topAppBarState = rememberTopAppBarState()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
         val scaffoldState = rememberScaffoldState()
 
+        // used for user interaction
         val coroutineScope = rememberCoroutineScope()
 
         DroidWeeklyTheme {
@@ -105,14 +112,22 @@ class NewsFeedActivity : ComponentActivity() {
                         .padding(innerPadding)
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
 
-                    FeedList(contentModifier, vm = viewModel, onViewUrl = { url, title ->
-                        val intent = Intent(Intent.ACTION_VIEW)
-                        intent.data = Uri.parse(url)
-                        DetailActivity.start(this@NewsFeedActivity, url, title = title)
-                    })
+                    // minimize the data model scope and pass only the necessary data
+                    val listState by viewModel.articleState.collectAsState()
+                    val showLoading by viewModel.dataLoading.collectAsState()
+
+                    FeedList(
+                        contentModifier,
+                        showLoading = showLoading,
+                        listState = listState,
+                        onViewUrl = onArticleClick,
+                    )
                 },
                 drawerContent = {
-                    BuildDrawerContent(vm = viewModel) { ref ->
+                    val refState by viewModel.itemRefState.collectAsState()
+                    val refSelected by viewModel.selectedRefPath.collectAsState()
+
+                    BuildDrawerContent(itemRefs = refState, refSelectedPath = refSelected) { ref ->
                         viewModel.loadBy(ref.relativePath)
 
                         // update the selected issue
@@ -132,25 +147,22 @@ class NewsFeedActivity : ComponentActivity() {
     @Composable
     private fun BuildDrawerContent(
         modifier: Modifier = Modifier,
-        vm: ArticleListViewModel,
+        itemRefs: List<OldItemRef>,
+        refSelectedPath: String,
         onRefClick: (ref: OldItemRef) -> Unit,
     ) {
-        val refState = vm.itemRefState.collectAsState()
-        val refSelected = vm.selectedRefPath.collectAsState()
+        if (refSelectedPath.isEmpty() && itemRefs.isNotEmpty()) {
+            LaunchedEffect(key1 = itemRefs[0].relativePath) {
+                viewModel.selectedRefPath.emit(itemRefs[0].relativePath)
+            }
+        }
 
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            if (refState.value.isNotEmpty()) {
-                // To be refactored : set the default ref
-                lifecycleScope.launch {
-                    if (vm.selectedRefPath.value.isEmpty()) {
-                        vm.selectedRefPath.emit(refState.value[0].relativePath)
-                    }
-                }
-
-                items(refState.value) {
+            if (itemRefs.isNotEmpty()) {
+                items(itemRefs) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -168,7 +180,7 @@ class NewsFeedActivity : ComponentActivity() {
                                 fontSize = 14.sp,
                                 color = Color.Blue,
                             )
-                            if (refSelected.value == it.relativePath) {
+                            if (refSelectedPath == it.relativePath) {
                                 Icon(imageVector = Icons.Default.Check, "", tint = Color.Blue)
                             }
                         }
@@ -232,14 +244,12 @@ fun FeedTopAppBar(
 @Composable
 fun FeedList(
     modifier: Modifier = Modifier,
-    vm: ArticleListViewModel,
+    showLoading: Boolean,
+    listState: List<ArticleItem>,
     onViewUrl: (url: String, title: String?) -> Unit,
 ) {
-    val listState = vm.articleState.collectAsState()
-    val showLoading = vm.dataLoading.collectAsState()
-
     Surface(modifier = modifier, color = MaterialTheme.colorScheme.background) {
-        if (showLoading.value) {
+        if (showLoading) {
             return@Surface Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
@@ -254,15 +264,14 @@ fun FeedList(
             }
         }
 
-        val items = listState.value
-        if (items != null && items.size > 1) {
-            println(">>> list state : $items")
+        if (listState.size > 1) {
+            println(">>> list state : $listState")
             LazyColumn(
                 modifier,
                 contentPadding = PaddingValues(all = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                itemsIndexed(items = items) { index, it ->
+                itemsIndexed(items = listState) { index, it ->
                     ArticleCard(data = it) { data: ArticleItem ->
                         println("item '${data.title}' clicked")
 
@@ -272,7 +281,7 @@ fun FeedList(
                     }
 
                     val hiddenSeparator =
-                        it.linkage.isEmpty() || index < (items.size - 1) && items[index + 1].linkage.isEmpty()
+                        it.linkage.isEmpty() || index < (listState.size - 1) && listState[index + 1].linkage.isEmpty()
                     if (!hiddenSeparator) {
                         Divider(color = Color.Black, thickness = Dp.Hairline)
                     }

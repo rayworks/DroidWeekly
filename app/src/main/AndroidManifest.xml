@@ -27,6 +27,9 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".search.SearchComposeActivity"
+            android:theme="@style/AppThemeMD"
+            />
         <activity
             android:name=".dashboard.DetailActivity"
             android:exported="false"

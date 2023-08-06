@@ -3,6 +3,7 @@ package com.rayworks.droidweekly.search
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.repository.IArticleRepository
@@ -16,6 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val repository: IArticleRepository,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
 
     var queryFlow: StateFlow<String>? = null
@@ -33,10 +35,30 @@ class SearchViewModel @Inject constructor(
     private val items: MutableLiveData<List<ArticleItem>> = MutableLiveData()
     val itemsLiveData: LiveData<List<ArticleItem>> = items
 
-    private suspend fun setupFlow(
-        dispatcher: CoroutineDispatcher = Dispatchers.IO,
-        onResetData: () -> Unit,
-    ) {
+    val itemsFlow = itemsLiveData.asFlow().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(
+            stopTimeoutMillis = 300,
+            replayExpirationMillis = 0,
+        ),
+        initialValue = Collections.emptyList(),
+    )
+
+    // The query data
+    private val _queryStr = MutableStateFlow("")
+    val query = _queryStr.asStateFlow()
+
+    fun setQuery(query: String) {
+        _queryStr.value = query
+
+        queryFlow = _queryStr
+
+        viewModelScope.launch {
+            _queryStr.emit(query)
+        }
+    }
+
+    private suspend fun setupFlow(onResetData: () -> Unit) {
         if (queryFlow == null) return
         queryFlow?.let { query ->
             query.debounce(300)

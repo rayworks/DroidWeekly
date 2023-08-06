@@ -4,17 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -34,16 +30,15 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
-import coil.compose.AsyncImage
 import com.rayworks.droidweekly.R
 import com.rayworks.droidweekly.dashboard.ui.theme.LightBlue
 import com.rayworks.droidweekly.di.KeyValueStorage
-import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.model.OldItemRef
+import com.rayworks.droidweekly.search.SearchComposeActivity
+import com.rayworks.droidweekly.ui.component.FeedList
 import com.rayworks.droidweekly.ui.theme.DroidWeeklyTheme
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -105,6 +100,7 @@ class NewsFeedActivity : ComponentActivity() {
                         appBarState = topAppBarState,
                         scrollBehavior = scrollBehavior,
                         context = this@NewsFeedActivity,
+                        onSearch = { SearchComposeActivity.start(this@NewsFeedActivity) },
                     )
                 },
                 content = { innerPadding ->
@@ -201,6 +197,7 @@ fun FeedTopAppBar(
         appBarState,
     ),
     context: Context,
+    onSearch: () -> Unit,
 ) {
     val ctx = LocalContext.current
     CenterAlignedTopAppBar(
@@ -222,11 +219,7 @@ fun FeedTopAppBar(
         },
         actions = {
             IconButton(onClick = {
-                Toast.makeText(
-                    ctx,
-                    "Search is not yet implemented ;)",
-                    Toast.LENGTH_LONG,
-                ).show()
+                onSearch.invoke()
             }) {
                 Icon(
                     imageVector = Icons.Filled.Search,
@@ -239,113 +232,4 @@ fun FeedTopAppBar(
         scrollBehavior = scrollBehavior,
         modifier = modifier,
     )
-}
-
-@Composable
-fun FeedList(
-    modifier: Modifier = Modifier,
-    showLoading: Boolean,
-    listState: List<ArticleItem>,
-    onViewUrl: (url: String, title: String?) -> Unit,
-) {
-    Surface(modifier = modifier, color = MaterialTheme.colorScheme.background) {
-        if (showLoading) {
-            return@Surface Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .width(32.dp)
-                        .height(32.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 2.dp,
-                )
-            }
-        }
-
-        if (listState.size > 1) {
-            println(">>> list state : $listState")
-            LazyColumn(
-                modifier,
-                contentPadding = PaddingValues(all = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                itemsIndexed(items = listState) { index, it ->
-                    ArticleCard(data = it) { data: ArticleItem ->
-                        println("item '${data.title}' clicked")
-
-                        if (data.linkage.isNotEmpty()) {
-                            onViewUrl.invoke(data.linkage, data.title)
-                        }
-                    }
-
-                    val hiddenSeparator =
-                        it.linkage.isEmpty() || index < (listState.size - 1) && listState[index + 1].linkage.isEmpty()
-                    if (!hiddenSeparator) {
-                        Divider(color = Color.Black, thickness = Dp.Hairline)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ArticleCard(data: ArticleItem, onItemClick: (data: ArticleItem) -> Unit) {
-    Box(
-        modifier = Modifier
-            .clickable {
-                if (data.description.isNotEmpty()) {
-                    onItemClick.invoke(data)
-                }
-            },
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            val invalid = data.imageUrl?.isEmpty() ?: true
-            if (!invalid) {
-                AsyncImage(
-                    model = data.imageUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(72.dp)
-                        .padding(end = 16.dp),
-                )
-            }
-            Column {
-                if (data.title.isNotEmpty()) {
-                    val noDesc = data.description.isEmpty()
-                    Box(
-                        modifier = Modifier
-                            .heightIn(min = if (noDesc) 48.dp else Dp.Unspecified)
-                            .background(color = if (noDesc) LightBlue else Color.Transparent),
-                        contentAlignment = Alignment.CenterStart,
-                    ) {
-                        Text(
-                            text = data.title,
-                            fontSize = 16.sp,
-                            color = if (noDesc) Color.White else MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier
-                                .padding(
-                                    top = if (noDesc) 0.dp else 16.dp,
-                                    start = if (noDesc) 16.dp else 0.dp,
-                                )
-                                .fillMaxWidth(),
-                        )
-                    }
-                }
-
-                if (data.description.isNotEmpty()) {
-                    Text(
-                        text = data.description,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(top = 16.dp, bottom = 16.dp),
-                    )
-                }
-            }
-        }
-    }
 }

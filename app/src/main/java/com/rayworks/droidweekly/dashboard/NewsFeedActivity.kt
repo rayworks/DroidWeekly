@@ -34,18 +34,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.rayworks.droidweekly.R
-import com.rayworks.droidweekly.dashboard.ui.theme.LightBlue
 import com.rayworks.droidweekly.di.KeyValueStorage
 import com.rayworks.droidweekly.model.OldItemRef
 import com.rayworks.droidweekly.search.SearchComposeActivity
 import com.rayworks.droidweekly.ui.component.FeedList
 import com.rayworks.droidweekly.ui.theme.DroidWeeklyTheme
+import com.rayworks.droidweekly.ui.theme.LightBlue
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+/***
+ * The latest dash board
+ */
 @AndroidEntryPoint
 class NewsFeedActivity : ComponentActivity() {
     private val viewModel: ArticleListViewModel by viewModels()
@@ -120,7 +123,7 @@ class NewsFeedActivity : ComponentActivity() {
                     )
                 },
                 drawerContent = {
-                    val refState by viewModel.itemRefState.collectAsState()
+                    val refState by viewModel.itemRefs.collectAsState()
                     val refSelected by viewModel.selectedRefPath.collectAsState()
 
                     BuildDrawerContent(itemRefs = refState, refSelectedPath = refSelected) { ref ->

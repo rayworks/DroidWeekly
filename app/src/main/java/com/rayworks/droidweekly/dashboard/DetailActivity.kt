@@ -1,5 +1,6 @@
 package com.rayworks.droidweekly.dashboard
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -27,10 +28,13 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.rayworks.droidweekly.dashboard.ui.theme.LightBlue
 import com.rayworks.droidweekly.ui.theme.DroidWeeklyTheme
+import com.rayworks.droidweekly.ui.theme.LightBlue
 import kotlinx.coroutines.launch
 
+/***
+ * The internal web page using embedded [WebView]
+ */
 class DetailActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,6 +70,7 @@ class DetailActivity : ComponentActivity() {
     }
 }
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun MainContent(url: String, title: String?, onClose: () -> Unit, onShare: (url: String) -> Unit) {
     Scaffold(

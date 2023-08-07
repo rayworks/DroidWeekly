@@ -13,6 +13,9 @@ import kotlinx.coroutines.flow.*
 import java.util.*
 import javax.inject.Inject
 
+/***
+ * The [ViewModel] for search page
+ */
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(

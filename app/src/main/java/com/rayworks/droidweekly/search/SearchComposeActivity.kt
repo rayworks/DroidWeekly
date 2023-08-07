@@ -34,11 +34,17 @@ import com.rayworks.droidweekly.ui.component.FeedList
 import com.rayworks.droidweekly.ui.theme.DroidWeeklyTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+/***
+ * The search page
+ */
 @AndroidEntryPoint
 class SearchComposeActivity : ComponentActivity() {
     private val searchViewModel: SearchViewModel by viewModels()
 
     companion object {
+        /***
+         * A convenient way to navigate to the search page
+         */
         @JvmStatic
         fun start(context: Context) {
             val starter = Intent(context, SearchComposeActivity::class.java)

@@ -20,6 +20,7 @@ import androidx.core.view.GravityCompat
 import androidx.databinding.Observable
 import androidx.databinding.Observable.OnPropertyChangedCallback
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -274,7 +275,7 @@ class MainActivity : AppCompatActivity() {
                 }
             },
         )
-        viewModel.itemRefs.observe(this, { oldItemRefs: List<OldItemRef> ->
+        viewModel.itemRefs.asLiveData().observe(this) { oldItemRefs: List<OldItemRef> ->
             val menu = navigationView.menu
             if (oldItemRefList != null && !oldItemRefList!!.isEmpty() &&
                 oldItemRefList!![0] === oldItemRefs[0]
@@ -302,7 +303,7 @@ class MainActivity : AppCompatActivity() {
             // default selection
             setMenuItemCheckStatus(menu, true)
             navigationView.invalidate()
-        })
+        }
     }
 
     private fun setMenuItemCheckStatus(menu: Menu, checked: Boolean) {
@@ -324,15 +325,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_theme, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         val id = item.itemId
         when (id) {
             R.id.action_theme_day -> App.get().updateTheme(ThemeOption.Day, true)

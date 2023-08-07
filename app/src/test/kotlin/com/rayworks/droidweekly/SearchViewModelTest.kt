@@ -1,7 +1,6 @@
 package com.rayworks.droidweekly
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.SavedStateHandle
 import com.rayworks.droidweekly.repository.IArticleRepository
 import com.rayworks.droidweekly.search.SearchViewModel
 import com.rayworks.droidweekly.utils.TestCoroutineRule
@@ -16,6 +15,9 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 
+/***
+ * The test case for [SearchViewModel]
+ */
 @ExperimentalCoroutinesApi
 @RunWith(MockitoJUnitRunner::class)
 class SearchViewModelTest {
@@ -24,8 +26,6 @@ class SearchViewModelTest {
 
     @get:Rule
     val testCoroutineRule = TestCoroutineRule()
-
-    private val stateHandle: SavedStateHandle = SavedStateHandle()
 
     @Mock
     private lateinit var articleRepository: IArticleRepository

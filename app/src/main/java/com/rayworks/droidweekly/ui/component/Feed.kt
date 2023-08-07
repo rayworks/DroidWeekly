@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.rayworks.droidweekly.dashboard.ui.theme.LightBlue
 import com.rayworks.droidweekly.model.ArticleItem
+import com.rayworks.droidweekly.ui.theme.LightBlue
 
 @Composable
 fun FeedList(

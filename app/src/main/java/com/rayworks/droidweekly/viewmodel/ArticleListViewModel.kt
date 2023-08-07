@@ -3,18 +3,15 @@ package com.rayworks.droidweekly.viewmodel
 import androidx.databinding.ObservableBoolean
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.repository.IArticleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.IOException
-import java.util.*
 import javax.inject.Inject
 
 /** * The ViewModel for a list of articles.  */
@@ -28,28 +25,12 @@ class ArticleListViewModel @Inject constructor(
 
     @JvmField
     val dataLoading = MutableStateFlow(true) // ObservableBoolean(false)
-    var articleItems = repository.articleList
+    var articleItems = repository.articleList.asLiveData()
 
     val itemRefs = repository.refList
 
-    val itemRefState = repository.refList.asFlow().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(
-            stopTimeoutMillis = 300,
-            replayExpirationMillis = 0,
-        ),
-        initialValue = Collections.emptyList(),
-    )
-
     // migrate to flow
-    val articleState = repository.articleList.asFlow().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(
-            stopTimeoutMillis = 300,
-            replayExpirationMillis = 0,
-        ),
-        initialValue = Collections.emptyList(),
-    )
+    val articleState = repository.articleList
 
     @JvmField
     val articleLoaded = ObservableBoolean(true)
@@ -79,8 +60,6 @@ class ArticleListViewModel @Inject constructor(
     fun load(forced: Boolean) {
         if (!forced) { // check the cache first
             if (!articleItems.value.isNullOrEmpty()) {
-                articleItems.postValue(articleItems.value)
-
                 return
             }
         }

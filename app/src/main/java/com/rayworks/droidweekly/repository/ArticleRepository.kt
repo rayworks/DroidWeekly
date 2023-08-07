@@ -9,6 +9,9 @@ import com.rayworks.droidweekly.repository.database.ArticleDao
 import com.rayworks.droidweekly.repository.database.entity.Article
 import com.rayworks.droidweekly.utils.jsonToObject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -26,8 +29,8 @@ class ArticleRepository @Inject constructor(
     val preferences: KeyValueStorage,
     val parser: WebContentParser,
 ) : IArticleRepository {
-    private var _refList: MutableLiveData<List<OldItemRef>> = MutableLiveData()
-    private var _articleList: MutableLiveData<List<ArticleItem>> = MutableLiveData()
+    private var _refList: MutableStateFlow<List<OldItemRef>> = MutableStateFlow(listOf())
+    private var _articleList: MutableStateFlow<List<ArticleItem>> = MutableStateFlow(listOf())
 
     private var articleLoaded = MutableLiveData<Boolean>()
 
@@ -43,16 +46,9 @@ class ArticleRepository @Inject constructor(
 
     private val gson = Gson()
 
-    override var refList: MutableLiveData<List<OldItemRef>>
-        get() = _refList
-        set(value) {
-            _refList = value
-        }
-    override var articleList: MutableLiveData<List<ArticleItem>>
-        get() = _articleList
-        set(value) {
-            _articleList = value
-        }
+    override var refList: StateFlow<List<OldItemRef>> = _refList.asStateFlow()
+
+    override var articleList: StateFlow<List<ArticleItem>> = _articleList.asStateFlow()
 
     /***
      * Loads the latest issue.
@@ -96,7 +92,7 @@ class ArticleRepository @Inject constructor(
 
     private suspend fun updateList(list: List<ArticleItem>) {
         withContext(Dispatchers.Main) {
-            articleList.value = list
+            _articleList.emit(list)
 
             println(">>> data : ${list.size} items loaded")
         }
@@ -126,7 +122,7 @@ class ArticleRepository @Inject constructor(
 
                 if (issueId > 0) {
                     val articlesByIssue = articleDao.getArticlesByIssue(issueId)
-                    if (articlesByIssue.isNullOrEmpty()) {
+                    if (articlesByIssue.isEmpty()) {
                         fetchRemote(url, issueId)
                     } else {
                         updateList(getArticleModels(articlesByIssue))
@@ -161,7 +157,7 @@ class ArticleRepository @Inject constructor(
                 preferences.putString(REFERENCE_ISSUES_ID, gson.toJson(itemRefs))
 
                 withContext(Dispatchers.Main) {
-                    refList.value = itemRefs
+                    _refList.emit(itemRefs)
                 }
 
                 val articles: List<Article> = articleDao.getArticlesByIssue(latestId)

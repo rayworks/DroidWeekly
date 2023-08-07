@@ -1,4 +1,4 @@
-package com.rayworks.droidweekly.dashboard.ui.theme
+package com.rayworks.droidweekly.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

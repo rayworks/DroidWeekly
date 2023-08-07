@@ -1,7 +1,6 @@
 package com.rayworks.droidweekly
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.SavedStateHandle
 import com.rayworks.droidweekly.model.ArticleItem
@@ -10,6 +9,7 @@ import com.rayworks.droidweekly.repository.IArticleRepository
 import com.rayworks.droidweekly.utils.TestCoroutineRule
 import com.rayworks.droidweekly.viewmodel.ArticleListViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
@@ -46,8 +46,8 @@ class ArticleListViewModelTest {
     fun `test basic loading data`() {
         testCoroutineRule.runBlockingTest {
             doReturn(null).`when`(articleRepository).loadData()
-            doReturn(MutableLiveData<List<OldItemRef>>()).`when`(articleRepository).refList
-            doReturn(MutableLiveData<List<OldItemRef>>()).`when`(articleRepository).articleList
+            doReturn(MutableStateFlow<List<OldItemRef>>(listOf())).`when`(articleRepository).refList
+            doReturn(MutableStateFlow<List<OldItemRef>>(listOf())).`when`(articleRepository).articleList
 
             val viewModel = ArticleListViewModel(stateHandle, articleRepository)
             viewModel.load(true)

@@ -71,10 +71,11 @@ class NewsFeedActivity : ComponentActivity() {
     }
 
     private fun loadInitData() {
-        val hasLastRef = viewModel.selectedRefPath.value.isNotEmpty()
-        Timber.d(">>> last selected : $hasLastRef")
-        if (viewModel.selectedRefPath.value.isNotEmpty()) {
-            viewModel.loadBy(viewModel.selectedRefPath.value)
+        val selectedPath = viewModel.selectedPathStateFlow.value
+        val hasLastRef = selectedPath.isNotEmpty()
+        Timber.d(">>> last selected : $hasLastRef, url path : $selectedPath")
+        if (selectedPath.isNotEmpty()) {
+            viewModel.loadBy(selectedPath)
         } else {
             viewModel.load(true)
         }
@@ -124,14 +125,14 @@ class NewsFeedActivity : ComponentActivity() {
                 },
                 drawerContent = {
                     val refState by viewModel.itemRefs.collectAsState()
-                    val refSelected by viewModel.selectedRefPath.collectAsState()
+                    val refSelected by viewModel.selectedPathStateFlow.collectAsState()
 
                     BuildDrawerContent(itemRefs = refState, refSelectedPath = refSelected) { ref ->
                         viewModel.loadBy(ref.relativePath)
 
                         // update the selected issue
                         lifecycleScope.launch {
-                            viewModel.selectedRefPath.emit(ref.relativePath)
+                            viewModel.selectIssuePath(ref.relativePath)
                         }
 
                         coroutineScope.launch {
@@ -151,8 +152,9 @@ class NewsFeedActivity : ComponentActivity() {
         onRefClick: (ref: OldItemRef) -> Unit,
     ) {
         if (refSelectedPath.isEmpty() && itemRefs.isNotEmpty()) {
-            LaunchedEffect(key1 = itemRefs[0].relativePath) {
-                viewModel.selectedRefPath.emit(itemRefs[0].relativePath)
+            val path = itemRefs[0].relativePath
+            LaunchedEffect(key1 = path) {
+                viewModel.selectIssuePath(path)
             }
         }
 

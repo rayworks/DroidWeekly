@@ -9,6 +9,7 @@ import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.repository.IArticleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.IOException
@@ -21,7 +22,18 @@ class ArticleListViewModel @Inject constructor(
     private val repository: IArticleRepository,
 ) : ViewModel() {
 
-    val keyMenuId = "menu_item_id"
+    private val keyMenuId = "menu_item_id"
+    private val keyMenuStr = "menu_item_str"
+
+    private var _selectedRefPath = MutableStateFlow("")
+    val selectedPathStateFlow: StateFlow<String> = _selectedRefPath
+
+    init {
+        if (savedStateHandle.contains(keyMenuStr)) {
+            _selectedRefPath.value = savedStateHandle[keyMenuStr]!!
+            Timber.i(">>> Selected Item restored : ${_selectedRefPath.value}")
+        }
+    }
 
     @JvmField
     val dataLoading = MutableStateFlow(true) // ObservableBoolean(false)
@@ -35,7 +47,12 @@ class ArticleListViewModel @Inject constructor(
     @JvmField
     val articleLoaded = ObservableBoolean(true)
 
-    var selectedRefPath = MutableStateFlow("")
+    suspend fun selectIssuePath(path: String) {
+        _selectedRefPath.emit(path)
+        savedStateHandle.set(keyMenuStr, path)
+
+        Timber.i(">>> Selected item saved : ${_selectedRefPath.value}")
+    }
 
     var selectedItemId: Int = 0
         set(value) {

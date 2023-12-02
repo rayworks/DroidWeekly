@@ -54,7 +54,6 @@ class SearchComposeActivity : ComponentActivity() {
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -64,7 +63,7 @@ class SearchComposeActivity : ComponentActivity() {
                     modifier = Modifier,
                     topBar = { BuildTopBar { this@SearchComposeActivity.finish() } },
                 ) {
-                    BuildBody(Modifier) { url, title ->
+                    BuildBody(Modifier.padding(it)) { url, title ->
                         val intent = Intent(Intent.ACTION_VIEW)
                         intent.data = Uri.parse(url)
                         DetailActivity.start(this@SearchComposeActivity, url, title = title)

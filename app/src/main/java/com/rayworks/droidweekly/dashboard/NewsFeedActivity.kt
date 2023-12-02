@@ -80,7 +80,7 @@ class NewsFeedActivity : ComponentActivity() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
     private fun BuildContent(onArticleClick: (url: String, title: String?) -> Unit) {
@@ -115,6 +115,7 @@ class NewsFeedActivity : ComponentActivity() {
                     }
                 }, content = {
                     Scaffold(
+                        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                         topBar = {
                             FeedTopAppBar(
                                 openDrawer = {
@@ -127,23 +128,19 @@ class NewsFeedActivity : ComponentActivity() {
                                 context = this@NewsFeedActivity,
                                 onSearch = { SearchComposeActivity.start(this@NewsFeedActivity) },
                             )
-                        },
-                        content = {
-                            val contentModifier = Modifier
-                                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                        })
+                    {
+                        // minimize the data model scope and pass only the necessary data
+                        val listState by viewModel.articleState.collectAsState()
+                        val showLoading by viewModel.dataLoading.collectAsState()
 
-                            // minimize the data model scope and pass only the necessary data
-                            val listState by viewModel.articleState.collectAsState()
-                            val showLoading by viewModel.dataLoading.collectAsState()
-
-                            FeedList(
-                                contentModifier,
-                                showLoading = showLoading,
-                                listState = listState,
-                                onViewUrl = onArticleClick,
-                            )
-                        }
-                    )
+                        FeedList(
+                            Modifier.padding(it),
+                            showLoading = showLoading,
+                            listState = listState,
+                            onViewUrl = onArticleClick,
+                        )
+                    }
                 })
         }
     }

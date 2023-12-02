@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
@@ -65,7 +66,7 @@ class DetailActivity : ComponentActivity() {
                     title = intent.getStringExtra("str_title") ?: "",
                     onClose = { finish() },
 
-                ) { url ->
+                    ) { url ->
                     val intent = Intent(Intent.ACTION_VIEW).apply {
                         data = Uri.parse(url)
                     }
@@ -127,16 +128,18 @@ fun MainContent(url: String, title: String?, onClose: () -> Unit, onShare: (url:
                 },
             )
         },
-        content = { BodyContent(url, onClose) },
+        content = {
+            BodyContent(Modifier.padding(it), url, onClose)
+        },
     )
 }
 
 @Composable
-fun BodyContent(url: String, onClose: () -> Unit) {
+fun BodyContent(modifier: Modifier, url: String, onClose: () -> Unit) {
     var rememberWebViewProgress: Float by remember { mutableStateOf(0f) }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .background(colorResource(android.R.color.white))
             .fillMaxSize(),
     ) {
@@ -146,9 +149,8 @@ fun BodyContent(url: String, onClose: () -> Unit) {
                 progress = rememberWebViewProgress,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(4.dp)
-                    .background(colorResource(android.R.color.white)),
-                color = Color.Cyan,
+                    .height(4.dp),
+                color = colorResource(android.R.color.holo_blue_light),
             )
         }
 

@@ -16,10 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,43 +39,42 @@ fun FeedList(
     listState: List<ArticleItem>,
     onViewUrl: (url: String, title: String?) -> Unit,
 ) {
-    Surface(modifier = modifier, color = MaterialTheme.colorScheme.background) {
-        if (showLoading) {
-            return@Surface Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .width(32.dp)
-                        .height(32.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 2.dp,
-                )
-            }
+    if (showLoading) {
+        return Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .width(32.dp)
+                    .height(32.dp),
+                color = MaterialTheme.colorScheme.primary,
+                strokeWidth = 2.dp,
+            )
         }
+    }
 
-        if (listState.size > 1) {
-            println(">>> list state : $listState")
-            LazyColumn(
-                modifier,
-                contentPadding = PaddingValues(all = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                itemsIndexed(items = listState) { index, it ->
-                    ArticleCard(data = it) { data: ArticleItem ->
-                        println("item '${data.title}' clicked")
+    if (listState.size > 1) {
+        println(">>> list state : $listState")
 
-                        if (data.linkage.isNotEmpty()) {
-                            onViewUrl.invoke(data.linkage, data.title)
-                        }
+        LazyColumn(
+            modifier,
+            contentPadding = PaddingValues(all = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            itemsIndexed(items = listState) { index, it ->
+                ArticleCard(data = it) { data: ArticleItem ->
+                    println("item '${data.title}' clicked")
+
+                    if (data.linkage.isNotEmpty()) {
+                        onViewUrl.invoke(data.linkage, data.title)
                     }
+                }
 
-                    val hiddenSeparator =
-                        it.linkage.isEmpty() || index < (listState.size - 1) && listState[index + 1].linkage.isEmpty()
-                    if (!hiddenSeparator) {
-                        Divider(color = Color.Black, thickness = Dp.Hairline)
-                    }
+                val hiddenSeparator =
+                    it.linkage.isEmpty() || index < (listState.size - 1) && listState[index + 1].linkage.isEmpty()
+                if (!hiddenSeparator) {
+                    Divider(color = Color.Black, thickness = Dp.Hairline)
                 }
             }
         }

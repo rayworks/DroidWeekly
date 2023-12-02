@@ -5,7 +5,7 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 
 android {
-    compileSdkVersion project.compileSdkVersion
+    compileSdk project.compileSdkVersion
 
     // Add Kotlin source directory to all source sets
     sourceSets.each {
@@ -23,10 +23,21 @@ android {
             useSupportLibrary true
         }
     }
+
+    signingConfigs {
+        app {
+            storeFile file("../keystore")
+            storePassword "$dwPwd"
+            keyAlias "$dwAlias"
+            keyPassword "$dwPwd"
+        }
+    }
+
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.app
         }
     }
 
@@ -95,32 +106,47 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.activity:activity-compose:1.6.1'
-    implementation "androidx.compose.ui:ui:$compose_ui_version"
-    implementation "androidx.compose.ui:ui-tooling-preview:$compose_ui_version"
-    implementation 'androidx.compose.material:material:1.3.1'
-    implementation 'androidx.compose.material3:material3:1.0.1'
+
+    // Compose Bom
+    def composeBom = platform('androidx.compose:compose-bom:2023.10.01')
+    implementation composeBom
+    androidTestImplementation composeBom
+
+    // Material Design 3
+    implementation 'androidx.compose.material3:material3'
+    implementation "androidx.compose.ui:ui"
+
+    // Android Studio Preview support
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+
+    // UI Tests
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+
+    // Integration with activities
+    implementation 'androidx.activity:activity-compose:1.8.1'
+
+    // Integration with ViewModels
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2'
 
     implementation("io.coil-kt:coil-compose:2.2.2")
 
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_ui_version"
-    debugImplementation "androidx.compose.ui:ui-tooling:$compose_ui_version"
-    debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_ui_version"
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
 
     kapt "com.android.databinding:compiler:$android_gradle_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    implementation 'androidx.activity:activity-ktx:1.3.1'
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
+    implementation 'androidx.activity:activity-ktx:1.8.1'
+    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     implementation 'com.github.yalantis:ucrop:2.2.6'
 
     implementation 'com.makeramen:roundedimageview:2.3.0'
     implementation 'com.jakewharton.timber:timber:5.0.1'
     implementation "org.jsoup:jsoup:$jsoup_version"
-    implementation "com.google.code.gson:gson:2.8.8"
+    implementation "com.google.code.gson:gson:2.9.1"
 
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
 
@@ -152,10 +178,10 @@ dependencies {
     // test dependencies
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:4.0.0'
-    testImplementation 'androidx.arch.core:core-testing:2.1.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2-native-mt'
+    testImplementation 'androidx.arch.core:core-testing:2.2.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1'
 
     androidTestImplementation 'de.mannodermaus.junit5:android-test-core:1.2.2'
     androidTestRuntimeOnly 'de.mannodermaus.junit5:android-test-runner:1.2.2'
@@ -170,7 +196,7 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test:1.7.10"
 
     // Test helpers for LiveData
-    testImplementation 'androidx.arch.core:core-testing:2.1.0'
+    testImplementation 'androidx.arch.core:core-testing:2.2.0'
 
     // Test helpers for Room
     testImplementation "androidx.room:room-testing:$room_version"

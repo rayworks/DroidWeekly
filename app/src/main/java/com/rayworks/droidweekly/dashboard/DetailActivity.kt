@@ -7,7 +7,13 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
-import android.webkit.*
+import android.webkit.SslErrorHandler
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -17,11 +23,23 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
@@ -70,7 +88,8 @@ class DetailActivity : ComponentActivity() {
     }
 }
 
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter", "UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MainContent(url: String, title: String?, onClose: () -> Unit, onShare: (url: String) -> Unit) {
     Scaffold(
@@ -85,7 +104,7 @@ fun MainContent(url: String, title: String?, onClose: () -> Unit, onShare: (url:
                         softWrap = true,
                     )
                 },
-                backgroundColor = LightBlue,
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = LightBlue),
                 navigationIcon = {
                     IconButton(onClick = { onClose.invoke() }) {
                         Icon(
@@ -127,9 +146,9 @@ fun BodyContent(url: String, onClose: () -> Unit) {
                 progress = rememberWebViewProgress,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(4.dp),
+                    .height(4.dp)
+                    .background(colorResource(android.R.color.white)),
                 color = Color.Cyan,
-                backgroundColor = colorResource(android.R.color.white),
             )
         }
 

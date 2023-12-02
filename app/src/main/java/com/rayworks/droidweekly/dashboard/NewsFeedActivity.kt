@@ -1,5 +1,6 @@
 package com.rayworks.droidweekly.dashboard
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -11,12 +12,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -82,52 +81,27 @@ class NewsFeedActivity : ComponentActivity() {
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
     private fun BuildContent(onArticleClick: (url: String, title: String?) -> Unit) {
         val topAppBarState = rememberTopAppBarState()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
-        val scaffoldState = rememberScaffoldState()
 
         // used for user interaction
+        val drawerState = rememberDrawerState(DrawerValue.Closed)
         val coroutineScope = rememberCoroutineScope()
 
         DroidWeeklyTheme {
-            Scaffold(
-                scaffoldState = scaffoldState,
-                topBar = {
-                    FeedTopAppBar(
-                        openDrawer = {
-                            coroutineScope.launch {
-                                scaffoldState.drawerState.open()
-                            }
-                        },
-                        appBarState = topAppBarState,
-                        scrollBehavior = scrollBehavior,
-                        context = this@NewsFeedActivity,
-                        onSearch = { SearchComposeActivity.start(this@NewsFeedActivity) },
-                    )
-                },
-                content = { innerPadding ->
-                    val contentModifier = Modifier
-                        .padding(innerPadding)
-                        .nestedScroll(scrollBehavior.nestedScrollConnection)
-
-                    // minimize the data model scope and pass only the necessary data
-                    val listState by viewModel.articleState.collectAsState()
-                    val showLoading by viewModel.dataLoading.collectAsState()
-
-                    FeedList(
-                        contentModifier,
-                        showLoading = showLoading,
-                        listState = listState,
-                        onViewUrl = onArticleClick,
-                    )
-                },
+            ModalNavigationDrawer(
+                drawerState = drawerState,
                 drawerContent = {
                     val refState by viewModel.itemRefs.collectAsState()
                     val refSelected by viewModel.selectedPathStateFlow.collectAsState()
 
-                    BuildDrawerContent(itemRefs = refState, refSelectedPath = refSelected) { ref ->
+                    BuildDrawerContent(
+                        itemRefs = refState,
+                        refSelectedPath = refSelected
+                    ) { ref ->
                         viewModel.loadBy(ref.relativePath)
 
                         // update the selected issue
@@ -136,11 +110,41 @@ class NewsFeedActivity : ComponentActivity() {
                         }
 
                         coroutineScope.launch {
-                            scaffoldState.drawerState.close()
+                            drawerState.close()
                         }
                     }
-                },
-            )
+                }, content = {
+                    Scaffold(
+                        topBar = {
+                            FeedTopAppBar(
+                                openDrawer = {
+                                    coroutineScope.launch {
+                                        drawerState.open()
+                                    }
+                                },
+                                appBarState = topAppBarState,
+                                scrollBehavior = scrollBehavior,
+                                context = this@NewsFeedActivity,
+                                onSearch = { SearchComposeActivity.start(this@NewsFeedActivity) },
+                            )
+                        },
+                        content = {
+                            val contentModifier = Modifier
+                                .nestedScroll(scrollBehavior.nestedScrollConnection)
+
+                            // minimize the data model scope and pass only the necessary data
+                            val listState by viewModel.articleState.collectAsState()
+                            val showLoading by viewModel.dataLoading.collectAsState()
+
+                            FeedList(
+                                contentModifier,
+                                showLoading = showLoading,
+                                listState = listState,
+                                onViewUrl = onArticleClick,
+                            )
+                        }
+                    )
+                })
         }
     }
 
@@ -158,31 +162,33 @@ class NewsFeedActivity : ComponentActivity() {
             }
         }
 
-        LazyColumn(
-            modifier = modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.SpaceBetween,
-        ) {
-            if (itemRefs.isNotEmpty()) {
-                items(itemRefs) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .height(32.dp)
-                            .clickable {
-                                onRefClick.invoke(it)
-                            },
-                        contentAlignment = Alignment.CenterStart,
-                    ) {
-                        Row {
-                            Text(
-                                it.title,
-                                textAlign = TextAlign.Center,
-                                fontSize = 14.sp,
-                                color = Color.Blue,
-                            )
-                            if (refSelectedPath == it.relativePath) {
-                                Icon(imageVector = Icons.Default.Check, "", tint = Color.Blue)
+        ModalDrawerSheet {
+            LazyColumn(
+                modifier = modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                if (itemRefs.isNotEmpty()) {
+                    items(itemRefs) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                                .height(32.dp)
+                                .clickable {
+                                    onRefClick.invoke(it)
+                                },
+                            contentAlignment = Alignment.CenterStart,
+                        ) {
+                            Row {
+                                Text(
+                                    it.title,
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 14.sp,
+                                    color = Color.Blue,
+                                )
+                                if (refSelectedPath == it.relativePath) {
+                                    Icon(imageVector = Icons.Default.Check, "", tint = Color.Blue)
+                                }
                             }
                         }
                     }
@@ -207,7 +213,7 @@ fun FeedTopAppBar(
     val ctx = LocalContext.current
     CenterAlignedTopAppBar(
         title = {
-            androidx.compose.material.Text(
+            Text(
                 text = context.getString(R.string.app_name),
                 color = Color.White,
                 style = MaterialTheme.typography.headlineSmall,

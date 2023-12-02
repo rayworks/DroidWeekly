@@ -11,18 +11,18 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,6 +37,7 @@ import dagger.hilt.android.AndroidEntryPoint
 /***
  * The search page
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
 class SearchComposeActivity : ComponentActivity() {
     private val searchViewModel: SearchViewModel by viewModels()
@@ -137,11 +138,12 @@ class SearchComposeActivity : ComponentActivity() {
                     Icon(imageVector = Icons.Default.Clear, contentDescription = "")
                 }
             },
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.Transparent,
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = MaterialTheme.colors.primary,
+                cursorColor = MaterialTheme.colorScheme.primary,
             ),
             modifier = Modifier
                 .fillMaxWidth()

@@ -19,3 +19,43 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-repackageclasses
+-dontskipnonpubliclibraryclassmembers
+
+-dontwarn android.support.**
+-dontwarn javax.lang.**
+-dontwarn com.google.android.gms.**
+
+
+# Keep Options:
+-keepattributes *Annotation*,EnclosingMethod
+-keepattributes JavascriptInterface
+-keepattributes Exceptions
+-keepattributes Signature
+-keepattributes SourceFile,LineNumberTable
+
+# okhttp
+-dontwarn com.squareup.okhttp.**
+-dontwarn okio.**
+-keep class com.squareup.okhttp.** { *; }
+-keep interface com.squareup.okhttp.** { *; }
+
+# Dagger
+-dontoptimize
+-dontpreverify
+-dontwarn dagger.internal.codegen.**
+-keepclassmembers,allowobfuscation class * {
+    @javax.inject.* *;
+    @dagger.* *;
+    <init>();
+}
+-keep class dagger.** { *; }
+-keep class javax.inject.* { *; }
+
+-keep public class * extends android.app.Activity
+-keep public class * extends android.content.BroadcastReceiver
+-keep public class * extends android.app.Service
+-keep public class * extends android.view.View
+-keep public class * extends android.content.ContentProvider
+-keep class androidx.compose.**{ *;}
+

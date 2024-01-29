@@ -38,6 +38,9 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+/***
+ * The custom app theme
+ */
 @Composable
 fun DroidWeeklyTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -50,6 +53,7 @@ fun DroidWeeklyTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

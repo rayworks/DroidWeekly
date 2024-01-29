@@ -4,6 +4,9 @@ import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.model.OldItemRef
 import kotlinx.coroutines.flow.StateFlow
 
+/***
+ * The interface for an abstract [ArticleItem] repository.
+ */
 interface IArticleRepository {
     /***
      * The observable reference list of historical articles

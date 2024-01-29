@@ -77,6 +77,9 @@ class DetailActivity : ComponentActivity() {
     }
 
     companion object {
+        /***
+         * The static method to start [DetailActivity]
+         */
         @JvmStatic
         fun start(context: Context, url: String, title: String? = "") {
             val starter = Intent(context, DetailActivity::class.java)
@@ -89,6 +92,9 @@ class DetailActivity : ComponentActivity() {
     }
 }
 
+/***
+ * Main entry for the content using Compose UI
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter", "UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -134,8 +140,11 @@ fun MainContent(url: String, title: String?, onClose: () -> Unit, onShare: (url:
     )
 }
 
+/***
+ * Content of current screen.
+ */
 @Composable
-fun BodyContent(modifier: Modifier, url: String, onClose: () -> Unit) {
+private fun BodyContent(modifier: Modifier, url: String, onClose: () -> Unit) {
     var rememberWebViewProgress: Float by remember { mutableStateOf(0f) }
 
     Column(
@@ -185,8 +194,11 @@ fun BodyContent(modifier: Modifier, url: String, onClose: () -> Unit) {
     }
 }
 
+/***
+ * The wrapped WebView layout
+ */
 @Composable
-fun WebContent(
+private fun WebContent(
     modifier: Modifier = Modifier,
     url: String,
     onProgressChange: (progress: Int) -> Unit = {},

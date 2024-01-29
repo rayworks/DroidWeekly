@@ -9,15 +9,25 @@ import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import java.util.LinkedList
 
+/***
+ * The parser used for extracting structured info from a web page.
+ */
 class WebContentParser {
     companion object {
         var logEnabled: Boolean = false
+
+        /***
+         * Local debug method for printing logs.
+         */
         fun debugPrint(message: Any?) {
             if (logEnabled) {
                 println(message)
             }
         }
 
+        /***
+         * Maps a string color value to an Int
+         */
         fun parseColor(colorString: String): Int {
             if (colorString[0] == '#') { // Use a long to avoid rollovers on #ffXXXXXX
                 var color: Long = colorString.substring(1).toLong(16)
@@ -96,8 +106,10 @@ class WebContentParser {
     private fun parseSections(issue: Element): List<ArticleItem> {
         val sections = issue.getElementsByClass(SECTIONS)
         if (!sections.isEmpty()) {
-            val newEntries = sections[0].getElementsByClass("text-container galileo-ap-content-editor")
-            val tables = if (newEntries.isEmpty()) sections[0].getElementsByTag(TABLE) else newEntries
+            val newEntries =
+                sections[0].getElementsByClass("text-container galileo-ap-content-editor")
+            val tables =
+                if (newEntries.isEmpty()) sections[0].getElementsByTag(TABLE) else newEntries
 
             debugPrint(">>> table size: " + tables.size)
             return parseArticleItems(sections[0], tables, newEntries.isNotEmpty())
@@ -114,7 +126,11 @@ class WebContentParser {
         return parseArticleItems(issues[0], tables, newEntries.isNotEmpty())
     }
 
-    private fun parseArticleItems(section: Element, tables: Elements, newEntryStyle: Boolean): List<ArticleItem> {
+    private fun parseArticleItems(
+        section: Element,
+        tables: Elements,
+        newEntryStyle: Boolean
+    ): List<ArticleItem> {
         val articleItems: MutableList<ArticleItem> = LinkedList()
 
         if (newEntryStyle) {

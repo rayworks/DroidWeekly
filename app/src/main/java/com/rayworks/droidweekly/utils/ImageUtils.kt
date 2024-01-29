@@ -36,15 +36,9 @@ fun Activity.cropImage(imageUri: Uri) {
     startCrop(this, Uri.fromFile(selectedImgFile), Uri.fromFile(croppedImgFile))
 }
 
-fun getFileUri(context: Context, pkg: String, file: File): Uri {
-    val auth = "$pkg.fileprovider"
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        FileProvider.getUriForFile(context, auth, file)
-    } else {
-        Uri.fromFile(file)
-    }
-}
-
+/***
+ * Returns the current time in milliseconds.
+ */
 fun getTimestamp(): Long {
     return System.currentTimeMillis()
 }
@@ -62,6 +56,9 @@ private fun startCrop(context: Activity, sourceUri: Uri, destinationUri: Uri) {
         .start(context)
 }
 
+/***
+ * Persists the bitmap to a file.
+ */
 fun convertBitmapToFile(destinationFile: File, bitmap: Bitmap) {
     // create a file to write bitmap data
     destinationFile.createNewFile()
@@ -77,6 +74,9 @@ fun convertBitmapToFile(destinationFile: File, bitmap: Bitmap) {
     fos.close()
 }
 
+/***
+ * Gets the decoded Bitmap
+ */
 fun getBitmap(context: Context, imageUri: Uri): Bitmap? {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         return ImageDecoder.decodeBitmap(
@@ -90,12 +90,16 @@ fun getBitmap(context: Context, imageUri: Uri): Bitmap? {
     }
 }
 
-fun getAuthority(): String {
+private fun getAuthority(): String {
     return BuildConfig.APPLICATION_ID + ".fileprovider"
 }
 
+/***
+ * Return a content URI for a given File.
+ */
 fun getCapturedImageOutputUri(context: Context, imageName: String): Uri {
-    val capturedImgFile = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), imageName)
+    val capturedImgFile =
+        File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), imageName)
 
     return FileProvider.getUriForFile(context, getAuthority(), capturedImgFile)
 }

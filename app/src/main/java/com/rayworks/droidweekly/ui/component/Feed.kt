@@ -32,6 +32,9 @@ import coil.compose.AsyncImage
 import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.ui.theme.LightBlue
 
+/***
+ * The list for all the news in a specific issue
+ */
 @Composable
 fun FeedList(
     modifier: Modifier = Modifier,
@@ -81,6 +84,9 @@ fun FeedList(
     }
 }
 
+/***
+ * A simple card for an Article
+ */
 @Composable
 fun ArticleCard(data: ArticleItem, onItemClick: (data: ArticleItem) -> Unit) {
     Box(

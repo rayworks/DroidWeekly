@@ -53,6 +53,9 @@ object AppModule {
         return WebContentParser()
     }
 
+    /***
+     * Provides a [CoroutineDispatcher] instance
+     */
     @Provides
     fun provideDispatcher(): CoroutineDispatcher {
         return Dispatchers.IO

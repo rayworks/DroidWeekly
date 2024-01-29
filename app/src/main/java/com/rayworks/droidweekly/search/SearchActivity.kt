@@ -99,6 +99,9 @@ class SearchActivity : AppCompatActivity() {
     }
 
     companion object {
+        /***
+         * The helper method to start [SearchActivity]
+         */
         @JvmStatic
         fun launch(context: Context) {
             val intent = Intent(context, SearchActivity::class.java)

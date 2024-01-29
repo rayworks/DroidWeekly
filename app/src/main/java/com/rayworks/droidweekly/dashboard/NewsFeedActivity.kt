@@ -195,9 +195,12 @@ class NewsFeedActivity : ComponentActivity() {
     }
 }
 
+/***
+ * The custom toolbar for news list
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FeedTopAppBar(
+private fun FeedTopAppBar(
     openDrawer: () -> Unit,
     modifier: Modifier = Modifier,
     appBarState: TopAppBarState = rememberTopAppBarState(),

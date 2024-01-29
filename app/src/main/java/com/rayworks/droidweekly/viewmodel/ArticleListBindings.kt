@@ -9,6 +9,9 @@ import com.rayworks.droidweekly.ui.component.ArticleAdapter
  * The custom binding for updating the data of a [RecyclerView.Adapter].
  */
 object ArticleListBindings {
+    /***
+     * Sets the binding list data
+     */
     @JvmStatic
     @BindingAdapter("app:items")
     fun setItems(

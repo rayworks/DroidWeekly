@@ -51,6 +51,9 @@ class SearchViewModel @Inject constructor(
     private val _queryStr = MutableStateFlow("")
     val query = _queryStr.asStateFlow()
 
+    /***
+     * Sets the instant query string
+     */
     fun setQuery(query: String) {
         _queryStr.value = query
 

@@ -47,6 +47,9 @@ class ArticleListViewModel @Inject constructor(
     @JvmField
     val articleLoaded = ObservableBoolean(true)
 
+    /***
+     * Select current issue
+     */
     suspend fun selectIssuePath(path: String) {
         _selectedRefPath.emit(path)
         savedStateHandle.set(keyMenuStr, path)
@@ -117,7 +120,4 @@ class ArticleListViewModel @Inject constructor(
         articleLoaded.set(false)
     }
 
-    suspend fun searchArticles(keyword: String): List<ArticleItem> {
-        return repository.loadLocalArticlesBy(keyword)
-    }
 }

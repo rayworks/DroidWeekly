@@ -88,7 +88,7 @@ class WebContentParser {
                 }
 
                 if (latestId == 0) {
-                    latestId = extractLatestIssueIdFromBadge(issue)
+                    latestId = extractLatestIssueIdFrom(issue)
                 }
                 // build the issue menu items
                 itemRefs.add(
@@ -107,9 +107,9 @@ class WebContentParser {
         return Pair(items, itemRefs)
     }
 
-    private fun extractLatestIssueIdFromBadge(issue: Element): Int {
+    private fun extractLatestIssueIdFrom(issueElement: Element): Int {
         var id = 0
-        val badges = issue.getElementsByClass("code-badge")
+        val badges = issueElement.getElementsByClass("code-badge")
         if (badges.isNotEmpty()) {
             val badge = badges[0]
             val imgTag = badge.getElementsByTag("img").getOrNull(0)

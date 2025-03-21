@@ -86,10 +86,14 @@ class WebContentParser {
                 if (latestIssueId.startsWith("#")) {
                     latestId = latestIssueId.substring(1).toInt()
                 }
+
+                if (latestId == 0) {
+                    latestId = extractLatestIssueIdFrom(issue)
+                }
                 // build the issue menu items
                 itemRefs.add(
                     0,
-                    OldItemRef("Issue $latestIssueId", "/issues/issue-$latestId", latestId),
+                    OldItemRef("Issue #$latestId", "/issues/issue-$latestId", latestId),
                 )
             }
 
@@ -101,6 +105,28 @@ class WebContentParser {
         }
 
         return Pair(items, itemRefs)
+    }
+
+    private fun extractLatestIssueIdFrom(issueElement: Element): Int {
+        var id = 0
+        val badges = issueElement.getElementsByClass("code-badge")
+        if (badges.isNotEmpty()) {
+            val badge = badges[0]
+            val imgTag = badge.getElementsByTag("img").getOrNull(0)
+            if (imgTag != null) {
+                val src = imgTag.attr("src")
+                // eg. "https://androidweekly.net/issues/issue-666/badge"
+                val issuePrefix = "issue-"
+                val pos = src.indexOf(issuePrefix)
+                if (pos >= 0) {
+                    val end = src.indexOf("/", pos)
+                    if (end >= 0) {
+                        id = src.substring(pos + issuePrefix.length, end).toInt()
+                    }
+                }
+            }
+        }
+        return id
     }
 
     private fun parseSections(issue: Element): List<ArticleItem> {

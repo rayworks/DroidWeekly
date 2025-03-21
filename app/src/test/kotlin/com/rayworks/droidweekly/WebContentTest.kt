@@ -9,6 +9,16 @@ class WebContentTest {
     private val parser = WebContentParser()
 
     @Test
+    fun `latest issue id parsing`() {
+        val content = ClassLoader.getSystemResource("weekly666.html").readText()
+        val pair = parser.parse(content)
+
+        val refs = pair.second
+        assertTrue(refs.isNotEmpty())
+        assertEquals(666, refs[0].issueId)
+    }
+
+    @Test
     fun `Latest issue content parsing`() {
         val content = ClassLoader.getSystemResource("weekly.html").readText()
         val pair = parser.parse(content)

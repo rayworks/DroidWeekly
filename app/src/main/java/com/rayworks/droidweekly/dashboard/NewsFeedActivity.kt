@@ -239,7 +239,13 @@ private fun FeedTopAppBar(
                 )
             }
         },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = LightBlue),
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = LightBlue,
+            scrolledContainerColor = LightBlue,
+            titleContentColor = Color.White,
+            navigationIconContentColor = Color.White,
+            actionIconContentColor = Color.White
+        ),
         scrollBehavior = scrollBehavior,
         modifier = modifier,
     )

@@ -66,7 +66,7 @@ class DetailActivity : ComponentActivity() {
                     title = intent.getStringExtra("str_title") ?: "",
                     onClose = { finish() },
 
-                    ) { url ->
+                ) { url ->
                     val intent = Intent(Intent.ACTION_VIEW).apply {
                         data = Uri.parse(url)
                     }

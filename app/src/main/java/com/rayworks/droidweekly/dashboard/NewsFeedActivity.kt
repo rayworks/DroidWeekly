@@ -100,7 +100,7 @@ class NewsFeedActivity : ComponentActivity() {
 
                     BuildDrawerContent(
                         itemRefs = refState,
-                        refSelectedPath = refSelected
+                        refSelectedPath = refSelected,
                     ) { ref ->
                         viewModel.loadBy(ref.relativePath)
 
@@ -113,7 +113,8 @@ class NewsFeedActivity : ComponentActivity() {
                             drawerState.close()
                         }
                     }
-                }, content = {
+                },
+                content = {
                     Scaffold(
                         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                         topBar = {
@@ -128,8 +129,8 @@ class NewsFeedActivity : ComponentActivity() {
                                 context = this@NewsFeedActivity,
                                 onSearch = { SearchComposeActivity.start(this@NewsFeedActivity) },
                             )
-                        })
-                    {
+                        },
+                    ) {
                         // minimize the data model scope and pass only the necessary data
                         val listState by viewModel.articleState.collectAsState()
                         val showLoading by viewModel.dataLoading.collectAsState()
@@ -141,7 +142,8 @@ class NewsFeedActivity : ComponentActivity() {
                             onViewUrl = onArticleClick,
                         )
                     }
-                })
+                },
+            )
         }
     }
 
@@ -244,7 +246,7 @@ private fun FeedTopAppBar(
             scrolledContainerColor = LightBlue,
             titleContentColor = Color.White,
             navigationIconContentColor = Color.White,
-            actionIconContentColor = Color.White
+            actionIconContentColor = Color.White,
         ),
         scrollBehavior = scrollBehavior,
         modifier = modifier,

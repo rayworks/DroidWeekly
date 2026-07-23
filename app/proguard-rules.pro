@@ -65,7 +65,6 @@
 -keep class com.rayworks.droidweekly.model.** { *; }
 
 # Dagger
--dontoptimize
 -dontpreverify
 -dontwarn dagger.internal.codegen.**
 -keepclassmembers,allowobfuscation class * {

@@ -5,7 +5,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.rayworks.droidweekly.model.ArticleItem
 import com.rayworks.droidweekly.repository.IArticleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -119,5 +118,4 @@ class ArticleListViewModel @Inject constructor(
 
         articleLoaded.set(false)
     }
-
 }

@@ -34,14 +34,37 @@
 -keepattributes Signature
 -keepattributes SourceFile,LineNumberTable
 
+# Gson rules
+# https://github.com/google/gson/blob/master/examples/android-proguard-example/proguard.cfg
+
+# Gson uses generic signatures for deserialization of generic types
+-keepattributes Signature
+
+# For using GSON @Expose annotation
+-keepattributes *Annotation*
+
+# Gson specific classes
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+-keep public class * implements com.google.gson.TypeAdapterFactory
+-keep public class * implements com.google.gson.JsonSerializer
+-keep public class * implements com.google.gson.JsonDeserializer
+
+# Prevent R8 from stripping away generic information from anonymous TypeToken subclasses
+-keepclassmembers class * extends com.google.gson.reflect.TypeToken {
+    <init>(...);
+}
+
 # okhttp
 -dontwarn com.squareup.okhttp.**
 -dontwarn okio.**
 -keep class com.squareup.okhttp.** { *; }
 -keep interface com.squareup.okhttp.** { *; }
 
+# Model
+-keep class com.rayworks.droidweekly.model.** { *; }
+
 # Dagger
--dontoptimize
 -dontpreverify
 -dontwarn dagger.internal.codegen.**
 -keepclassmembers,allowobfuscation class * {

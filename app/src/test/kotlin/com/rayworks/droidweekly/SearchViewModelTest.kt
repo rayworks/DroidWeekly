@@ -32,7 +32,7 @@ class SearchViewModelTest {
 
     @Test
     fun `after query reset`() {
-        testCoroutineRule.runBlockingTest {
+        testCoroutineRule.runTest {
             val viewModel = SearchViewModel(articleRepository, Dispatchers.Main)
 
             viewModel.itemsLiveData.observeForever {

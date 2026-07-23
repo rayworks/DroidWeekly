@@ -44,7 +44,7 @@ class ArticleListViewModelTest {
      */
     @Test
     fun `test basic loading data`() {
-        testCoroutineRule.runBlockingTest {
+        testCoroutineRule.runTest {
             doReturn(null).`when`(articleRepository).loadData()
             doReturn(MutableStateFlow<List<OldItemRef>>(listOf())).`when`(articleRepository).refList
             doReturn(MutableStateFlow<List<OldItemRef>>(listOf())).`when`(articleRepository).articleList

@@ -155,7 +155,7 @@ class WebContentParser {
     private fun parseArticleItems(
         section: Element,
         tables: Elements,
-        newEntryStyle: Boolean
+        newEntryStyle: Boolean,
     ): List<ArticleItem> {
         val articleItems: MutableList<ArticleItem> = LinkedList()
 

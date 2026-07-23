@@ -2,10 +2,10 @@ package com.rayworks.droidweekly.utils
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -17,9 +17,9 @@ import org.junit.runners.model.Statement
 @ExperimentalCoroutinesApi
 class TestCoroutineRule : TestRule {
 
-    private val testCoroutineDispatcher = TestCoroutineDispatcher()
+    private val testCoroutineDispatcher = UnconfinedTestDispatcher()
 
-    private val testCoroutineScope = TestCoroutineScope(testCoroutineDispatcher)
+    private val testCoroutineScope = TestScope(testCoroutineDispatcher)
 
     override fun apply(base: Statement, description: Description?) = object : Statement() {
         @Throws(Throwable::class)
@@ -29,13 +29,12 @@ class TestCoroutineRule : TestRule {
             base.evaluate()
 
             Dispatchers.resetMain()
-            testCoroutineScope.cleanupTestCoroutines()
         }
     }
 
     /***
-     * Convenience method for calling [runBlockingTest] on an existing [TestCoroutineScope] with Coroutine.
+     * Convenience method for calling [runTest] on an existing [TestScope] with Coroutine.
      */
-    fun runBlockingTest(block: suspend TestCoroutineScope.() -> Unit) =
-        testCoroutineScope.runBlockingTest { block() }
+    fun runTest(block: suspend TestScope.() -> Unit) =
+        testCoroutineScope.runTest { block() }
 }

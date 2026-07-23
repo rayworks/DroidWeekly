@@ -159,7 +159,7 @@ class NewsFeedActivity : ComponentActivity() {
             }
         }
 
-        ModalDrawerSheet {
+        ModalDrawerSheet(modifier = Modifier.fillMaxWidth(.618f)) {
             LazyColumn(
                 modifier = modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.SpaceBetween,

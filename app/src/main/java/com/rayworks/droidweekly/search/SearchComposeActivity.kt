@@ -8,28 +8,25 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.rayworks.droidweekly.dashboard.DetailActivity
 import com.rayworks.droidweekly.ui.component.FeedList
 import com.rayworks.droidweekly.ui.theme.DroidWeeklyTheme
@@ -109,14 +106,18 @@ class SearchComposeActivity : ComponentActivity() {
                 )
             },
 
-            modifier = modifier
-                .background(LightBlue)
-                .statusBarsPadding(),
+            modifier = modifier,
+
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                containerColor = LightBlue,
+                navigationIconContentColor = Color.White,
+                titleContentColor = Color.White,
+            ),
 
             navigationIcon = {
                 IconButton(onClick = onUpClick) {
                     Icon(
-                        Icons.Filled.ArrowBack,
+                        Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
                     )
                 }
@@ -146,11 +147,15 @@ class SearchComposeActivity : ComponentActivity() {
                 focusedContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedLabelColor = Color.White,
+                unfocusedLabelColor = Color.White,
+                focusedTrailingIconColor = Color.White,
+                unfocusedTrailingIconColor = Color.White,
+                cursorColor = Color.White,
             ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

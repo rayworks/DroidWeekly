@@ -3,7 +3,7 @@
 buildscript {
 
     ext {
-        android_gradle_version = '8.9.0'
+        android_gradle_version = '8.9.1'
         kotlin_version = '2.1.0'
         hilt_version = '2.55'
         hilt_androidx_version = '1.2.0'
